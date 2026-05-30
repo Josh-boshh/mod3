@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="theme-color" content="#007D53" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>SERVICOM — Federal Ministry of Defence</title>
+  <meta name="description" content="The Service Compact with All Nigerians (SERVICOM) — the Ministry's commitment to service standards and the right of citizens to complain." />
+  <link rel="icon" type="image/png" href="assets/images/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;1,400&display=swap" />
+  <link rel="stylesheet" href="assets/css/style.css?v=19" />
+  <link rel="stylesheet" href="assets/css/mobile-nav.css" />
+</head>
+<body>
+  <div data-include="header"></div>
+
+  <main id="main">
+    <section class="page-hero">
+      <div class="container">
+        <div class="crumbs"><a href="index.html">Home</a><span>›</span>Services<span>›</span>SERVICOM</div>
+        <span class="eyebrow">Service Compact</span>
+        <h1>SERVICOM.</h1>
+        <p class="lead">The Service Compact with All Nigerians — the Ministry's public promise on service standards, and the right of every citizen to complain if those standards are not met.</p>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <div class="two-col">
+          <div>
+            <h2>What SERVICOM means.</h2>
+            <p>SERVICOM is a Government-wide initiative requiring every Ministry, Department and Agency to publish a Service Charter and to deal with citizens with courtesy, efficiency and accountability.</p>
+            <p>In the Federal Ministry of Defence, SERVICOM is championed by the Department of Reform Coordination and Service Improvement. Our SERVICOM Unit receives, investigates and resolves complaints about the quality of service the Ministry provides.</p>
+            <a href="services.html#charter" class="btn-link">Read our Service Charter</a>
+          </div>
+          <div>
+            <h2>Make a complaint.</h2>
+            <form class="form-grid mod-recaptcha-form" data-form-type="servicom" data-success-message="Thank you. Your SERVICOM complaint has been received. You will receive a reference number by email within 24 hours." onsubmit="return window.modRecaptchaSubmit(this, event);" style="margin-top:14px;">
+              <div><label for="s-name">Name</label><input id="s-name" name="name" type="text" required /></div>
+              <div><label for="s-email">Email</label><input id="s-email" name="email" type="email" required /></div>
+              <div class="full"><label for="s-where">Where the service was received</label><input id="s-where" name="where" type="text" required placeholder="e.g. Procurement Department, Ship House" /></div>
+              <div class="full"><label for="s-when">When (date)</label><input id="s-when" name="when" type="date" required /></div>
+              <div class="full"><label for="s-details">What happened</label><textarea id="s-details" name="details" required></textarea></div>
+              <div class="full">
+                <div class="mod-recaptcha-widget" aria-label="reCAPTCHA widget"></div>
+                <input type="hidden" name="recaptcha_response" class="mod-recaptcha-response" value="" />
+                <div class="captcha-error" role="alert" style="display:none; align-items:center; gap:8px; margin-top:8px; font-size:.83rem; color:var(--red);">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  <span class="captcha-error-message">Please complete the CAPTCHA to continue.</span>
+                </div>
+              </div>
+              <div class="full"><button class="btn btn-green" type="submit">Submit complaint</button></div>
+            </form>
+            <p style="margin-top:14px; font-size:.85rem; color:var(--ink-3);">SERVICOM complaints are resolved within <strong>7 working days</strong>. Email <a href="mailto:servicom@defence.gov.ng">servicom@defence.gov.ng</a> to follow up.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div data-include="footer"></div>
+  <div data-include="chatbot"></div>
+  <div data-include="a11y"></div>
+
+  <script src="assets/js/realdata.js"></script>
+  <script src="assets/js/partials.js"></script>
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/i18n.js"></script>
+  <script src="assets/js/google-translate.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/chatbot.js"></script>
+</body>
+</html>
+

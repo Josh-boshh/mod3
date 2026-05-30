@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="theme-color" content="#007D53" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Freedom of Information — Federal Ministry of Defence</title>
+  <meta name="description" content="Submit Freedom of Information requests to the Federal Ministry of Defence under the FOI Act, 2011." />
+  <link rel="icon" type="image/png" href="assets/images/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;1,400&display=swap" />
+  <link rel="stylesheet" href="assets/css/style.css?v=19" />
+  <link rel="stylesheet" href="assets/css/mobile-nav.css" />
+</head>
+<body>
+  <div data-include="header"></div>
+
+  <main id="main">
+    <section class="page-hero">
+      <div class="container">
+        <div class="crumbs"><a href="index.html">Home</a><span>›</span>Services<span>›</span>Freedom of Information</div>
+        <span class="eyebrow">Open Government</span>
+        <h1>Freedom of Information.</h1>
+        <p class="lead">The Federal Ministry of Defence is bound by the Freedom of Information Act, 2011. Citizens, journalists and organisations have the right to request any record held by the Ministry, subject only to the narrow statutory exemptions.</p>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <div class="two-col">
+          <div>
+            <span class="eyebrow">Submit a request</span>
+            <h2>FOI request form.</h2>
+            <p>Complete the form below to submit your request. The Ministry will respond within <strong>7 working days</strong> as required by the FOI Act.</p>
+            <form class="form-grid mod-recaptcha-form" data-form-type="foi" data-success-message="Thank you. Your FOI request has been logged. You will receive a reference number by email within 24 hours." onsubmit="return window.modRecaptchaSubmit(this, event);" style="margin-top:24px;">
+              <div>
+                <label for="foi-name">Full name</label>
+                <input id="foi-name" name="name" type="text" required />
+              </div>
+              <div>
+                <label for="foi-email">Email</label>
+                <input id="foi-email" name="email" type="email" required />
+              </div>
+              <div>
+                <label for="foi-phone">Phone (optional)</label>
+                <input id="foi-phone" name="phone" type="tel" />
+              </div>
+              <div>
+                <label for="foi-org">Organisation (optional)</label>
+                <input id="foi-org" name="organisation" type="text" />
+              </div>
+              <div class="full">
+                <label for="foi-subject">Subject</label>
+                <input id="foi-subject" name="subject" type="text" required placeholder="Short description" />
+              </div>
+              <div class="full">
+                <label for="foi-details">Details of information requested</label>
+                <textarea id="foi-details" name="details" required placeholder="Please describe the records you would like, including dates if known."></textarea>
+                <div class="field-help">Be as specific as possible — this helps the responsible officer locate the records quickly.</div>
+              </div>
+              <div class="full">
+                <div class="mod-recaptcha-widget" aria-label="reCAPTCHA widget"></div>
+                <input type="hidden" name="recaptcha_response" class="mod-recaptcha-response" value="" />
+                <div class="captcha-error" role="alert" style="display:none; align-items:center; gap:8px; margin-top:8px; font-size:.83rem; color:var(--red);">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  <span class="captcha-error-message">Please complete the CAPTCHA to continue.</span>
+                </div>
+              </div>
+              <div class="full">
+                <button class="btn btn-green" type="submit">Submit request</button>
+              </div>
+            </form>
+          </div>
+          <div>
+            <span class="eyebrow">Information</span>
+            <h2>How it works.</h2>
+            <ol style="margin-top:14px;">
+              <li><strong>Submit:</strong> use the form (left) or send a letter to the FOI Desk Officer at Ship House.</li>
+              <li><strong>Acknowledgement:</strong> we acknowledge in writing within 3 working days with a reference number.</li>
+              <li><strong>Response:</strong> records or a written reasoned reply within 7 working days of receipt.</li>
+              <li><strong>Appeal:</strong> if you disagree with the response you may appeal to the Federal High Court under §20 of the FOI Act.</li>
+            </ol>
+            <div class="alert gold" style="margin-top:24px;"><strong>Exemptions.</strong> The Ministry can withhold a record only if its disclosure would damage national defence, foreign relations, an ongoing investigation, or fall within another narrow statutory exemption (FOI Act §11–17). Where exemptions apply we will tell you so and cite the section.</div>
+            <h3 style="margin-top:32px;">Annual FOI report</h3>
+            <p>Each year the Ministry publishes the number of FOI requests received, granted, partially granted and refused. The latest report is available on request.</p>
+            <h3 style="margin-top:24px;">FOI Desk Officer</h3>
+            <p>Director, Reform Coordination & Service Improvement<br>
+              Federal Ministry of Defence<br>
+              Ship House, Area 10, Abuja<br>
+              <a href="mailto:foi@defence.gov.ng">foi@defence.gov.ng</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div data-include="footer"></div>
+  <div data-include="chatbot"></div>
+  <div data-include="a11y"></div>
+
+  <script src="assets/js/realdata.js"></script>
+  <script src="assets/js/partials.js"></script>
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/i18n.js"></script>
+  <script src="assets/js/google-translate.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/chatbot.js"></script>
+</body>
+</html>
+

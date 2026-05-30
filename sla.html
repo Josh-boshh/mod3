@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="theme-color" content="#007D53" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Service Level Agreement — Federal Ministry of Defence</title>
+  <meta name="description" content="The Federal Ministry of Defence Service Level Agreement — our published standards for response times, service delivery and complaint resolution." />
+  <link rel="icon" type="image/png" href="assets/images/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;1,400&display=swap" />
+  <link rel="stylesheet" href="assets/css/style.css?v=19" />
+  <link rel="stylesheet" href="assets/css/mobile-nav.css" />
+  <style>
+    /* ── SLA commitment table ── */
+    .sla-table { width: 100%; border-collapse: collapse; margin-top: 24px; }
+    .sla-table thead tr { background: var(--ink); color: #fff; }
+    .sla-table thead th { padding: 13px 18px; text-align: left; font-size: .8rem; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; }
+    .sla-table tbody tr { border-bottom: 1px solid var(--paper-3); transition: background .15s; }
+    .sla-table tbody tr:hover { background: var(--paper-2); }
+    .sla-table tbody td { padding: 15px 18px; font-size: .92rem; vertical-align: top; }
+    .sla-table .target { font-weight: 700; color: var(--green); white-space: nowrap; }
+    .sla-table .service { font-weight: 600; color: var(--ink); }
+    .sla-table .sub { color: var(--ink-3); font-size: .84rem; margin-top: 3px; }
+
+    /* ── Commitment card row ── */
+    .commitment-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-top: 32px; }
+    .commitment-card { background: var(--paper-2); border-radius: var(--radius); padding: 28px 24px; border-top: 3px solid var(--green); }
+    .commitment-card .icon-num { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--green); line-height: 1; margin-bottom: 10px; }
+    .commitment-card h4 { font-size: 1rem; margin-bottom: 8px; }
+    .commitment-card p { font-size: .88rem; color: var(--ink-2); margin: 0; }
+    @media (max-width: 640px) { .commitment-grid { grid-template-columns: 1fr; } }
+
+    /* ── Version box ── */
+    .version-box { background: var(--ink); color: rgba(255,255,255,.8); border-radius: var(--radius); padding: 20px 24px; font-size: .84rem; display: flex; gap: 32px; flex-wrap: wrap; margin-bottom: 40px; }
+    .version-box strong { color: #fff; display: block; font-size: .75rem; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 3px; }
+  </style>
+</head>
+<body>
+  <div data-include="header"></div>
+
+  <main id="main">
+    <section class="page-hero">
+      <div class="container">
+        <div class="crumbs"><a href="index.html">Home</a><span>›</span>Services<span>›</span>Service Level Agreement</div>
+        <span class="eyebrow">Accountability</span>
+        <h1>Service Level Agreement.</h1>
+        <p class="lead">This Service Level Agreement (SLA) sets out the standards of service that citizens, organisations and internal stakeholders can expect from the Federal Ministry of Defence. It defines response times, escalation paths and performance commitments across all public-facing functions.</p>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+
+        <!-- Version metadata -->
+        <div class="version-box">
+          <div><strong>Version</strong> 2.1</div>
+          <div><strong>Effective date</strong> 1 January 2025</div>
+          <div><strong>Review cycle</strong> Annual</div>
+          <div><strong>Owner</strong> Director, Reform Coordination &amp; Service Improvement</div>
+          <div><strong>Contact</strong> <a href="mailto:sla@defence.gov.ng" style="color:var(--gold);">sla@defence.gov.ng</a></div>
+        </div>
+
+        <div class="two-col">
+          <!-- Left column -->
+          <div>
+            <span class="eyebrow">Response Standards</span>
+            <h2>What you can expect from us.</h2>
+            <p>All working-day timelines run from the next working day after the Ministry receives a complete request. "Complete" means the request includes all information reasonably needed to process it.</p>
+
+            <table class="sla-table" aria-label="Ministry service response standards">
+              <thead>
+                <tr>
+                  <th>Service</th>
+                  <th>Standard response</th>
+                  <th>Escalation</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="service">General correspondence</div>
+                    <div class="sub">Letters, emails and formal written enquiries</div>
+                  </td>
+                  <td class="target">5 working days</td>
+                  <td>10 working days</td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="service">Freedom of Information requests</div>
+                    <div class="sub">Under the FOI Act, 2011</div>
+                  </td>
+                  <td class="target">7 working days</td>
+                  <td>Federal High Court appeal</td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="service">SERVICOM complaints</div>
+                    <div class="sub">Service quality complaints via the SERVICOM Unit</div>
+                  </td>
+                  <td class="target">7 working days</td>
+                  <td>National SERVICOM Office</td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="service">Procurement enquiries</div>
+                    <div class="sub">Tender clarifications and status queries</div>
+                  </td>
+                  <td class="target">3 working days</td>
+                  <td>Bureau of Public Procurement</td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="service">Media and press office</div>
+                    <div class="sub">Journalist and media enquiries</div>
+                  </td>
+                  <td class="target">1 working day</td>
+                  <td>2 working days</td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="service">Certificate / document requests</div>
+                    <div class="sub">Verification letters, service certificates (veterans)</div>
+                  </td>
+                  <td class="target">10 working days</td>
+                  <td>15 working days</td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="service">Website feedback &amp; accessibility</div>
+                    <div class="sub">Bug reports, accessibility issues</div>
+                  </td>
+                  <td class="target">3 working days</td>
+                  <td>7 working days</td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="service">Recruitment enquiries</div>
+                    <div class="sub">Shortlisting, interview and offer correspondence</div>
+                  </td>
+                  <td class="target">10 working days</td>
+                  <td>Per advertised timeline</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="alert gold" style="margin-top:28px;">
+              <strong>National holidays.</strong> Working days exclude Federal public holidays and any days the Ministry is formally closed by Government directive. During periods of declared emergency the Ministry will publish revised timelines on this page and on its social media channels.
+            </div>
+          </div>
+
+          <!-- Right column -->
+          <div>
+            <span class="eyebrow">Our Commitments</span>
+            <h2>The standards we hold ourselves to.</h2>
+
+            <div class="commitment-grid">
+              <div class="commitment-card">
+                <div class="icon-num">01</div>
+                <h4>Courtesy &amp; professionalism</h4>
+                <p>Every member of staff who deals with the public will do so with respect, clarity and appropriate confidentiality at all times.</p>
+              </div>
+              <div class="commitment-card">
+                <div class="icon-num">02</div>
+                <h4>Timely acknowledgement</h4>
+                <p>We will acknowledge every formal request within 1 working day of receipt and provide a reference number.</p>
+              </div>
+              <div class="commitment-card">
+                <div class="icon-num">03</div>
+                <h4>Plain language</h4>
+                <p>Responses will be written in plain, clear English (and, where capacity allows, Hausa, Yoruba or Igbo) without unnecessary jargon.</p>
+              </div>
+              <div class="commitment-card">
+                <div class="icon-num">04</div>
+                <h4>Right first time</h4>
+                <p>We aim to resolve requests fully at first contact, avoiding the need for follow-up chasing by citizens.</p>
+              </div>
+              <div class="commitment-card">
+                <div class="icon-num">05</div>
+                <h4>Transparent escalation</h4>
+                <p>If your matter cannot be resolved within the standard time, we will tell you why and give a revised date in writing.</p>
+              </div>
+              <div class="commitment-card">
+                <div class="icon-num">06</div>
+                <h4>No wrong door</h4>
+                <p>If your enquiry falls under another Ministry or agency, we will redirect you with the correct contact details rather than simply refusing.</p>
+              </div>
+            </div>
+
+            <h3 style="margin-top:40px;">What we ask of you</h3>
+            <ul>
+              <li>Provide your full name and a valid contact address or email.</li>
+              <li>State your request clearly and include all relevant background.</li>
+              <li>Enclose any supporting documents the Ministry will need to process your request.</li>
+              <li>Allow sufficient time before chasing — many requests are completed well within the SLA.</li>
+            </ul>
+
+            <h3 style="margin-top:32px;">When this SLA does not apply</h3>
+            <p style="font-size:.92rem; color:var(--ink-2);">This SLA covers the Ministry's civilian public-facing services. It does not govern operational military matters, classified communications, or matters under active judicial proceedings. For those, please contact the relevant command or legal authority directly.</p>
+
+            <h3 style="margin-top:32px;">Complaints about this SLA</h3>
+            <p style="font-size:.92rem;">If you believe the Ministry has not met these standards, please:</p>
+            <ol style="font-size:.92rem;">
+              <li>Write to <a href="mailto:sla@defence.gov.ng">sla@defence.gov.ng</a> quoting your reference number.</li>
+              <li>If unresolved, raise a <a href="servicom.html">SERVICOM complaint</a>.</li>
+              <li>As a last resort, contact the National SERVICOM Office, The Presidency, Abuja.</li>
+            </ol>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <div data-include="footer"></div>
+  <div data-include="chatbot"></div>
+  <div data-include="a11y"></div>
+
+  <script src="assets/js/realdata.js"></script>
+  <script src="assets/js/partials.js"></script>
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/i18n.js"></script>
+  <script src="assets/js/google-translate.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/chatbot.js"></script>
+</body>
+</html>

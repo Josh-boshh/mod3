@@ -1,0 +1,20 @@
+# Federal Ministry of Defence — Security disclosure policy
+# Per RFC 9116 — https://securitytxt.org
+# Canonical: https://defence.gov.ng/.well-known/security.txt
+
+Contact: mailto:security@defence.gov.ng
+Contact: https://defence.gov.ng/contact.html
+Expires: 2027-06-01T00:00:00.000Z
+Preferred-Languages: en, ha, yo, ig
+Canonical: https://defence.gov.ng/.well-known/security.txt
+Policy: https://defence.gov.ng/privacy.html
+Encryption: https://defence.gov.ng/.well-known/pgp-key.txt
+
+# Responsible disclosure
+# If you discover a security vulnerability in this website or any related
+# public-facing service of the Federal Ministry of Defence, please report
+# it responsibly via the contacts above.
+#
+# Do NOT publicly disclose the issue until the Ministry has had a reasonable
+# opportunity to investigate and remediate (90-day coordinated disclosure).
+# We will acknowledge your report within 3 working days.

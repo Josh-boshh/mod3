@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="theme-color" content="#007D53" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Department — Federal Ministry of Defence</title>
+  <meta name="description" content="Department of the Federal Ministry of Defence — mandate, leadership and contact." />
+  <link rel="icon" type="image/png" href="assets/images/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;1,400&display=swap" />
+  <link rel="stylesheet" href="assets/css/style.css?v=19" />
+  <link rel="stylesheet" href="assets/css/mobile-nav.css" />
+</head>
+<body>
+  <div data-include="header"></div>
+
+  <main id="main">
+    <section class="page-hero">
+      <div class="container">
+        <div class="crumbs" id="crumbs"><a href="index.html">Home</a><span>›</span>Components<span>›</span><span id="crumbDept">Department</span></div>
+        <span class="eyebrow" id="deptCategory">Civilian Component</span>
+        <h1 id="deptTitle">Department of the Ministry</h1>
+        <p class="lead" id="deptLead">Mandate, leadership and contact information.</p>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <div class="two-col">
+          <div>
+            <span class="eyebrow">Mandate</span>
+            <h2 id="mandateTitle">What this department does.</h2>
+            <div id="mandateBody"><p>Loading department information…</p></div>
+          </div>
+          <div>
+            <div class="card">
+              <span class="eyebrow">Leadership</span>
+              <h3 id="leaderTitle" style="margin-top:8px;">Director</h3>
+              <p id="leaderName" style="color:var(--ink-3);">—</p>
+              <h4 style="margin-top:18px;">Reports to</h4>
+              <p style="color:var(--ink-3);">Permanent Secretary, Federal Ministry of Defence</p>
+              <h4 style="margin-top:18px;">Office</h4>
+              <p style="color:var(--ink-3);">Ship House, Area 10, Federal Capital Territory, Abuja</p>
+              <h4 style="margin-top:18px;">Email</h4>
+              <p style="color:var(--ink-3);"><a id="leaderEmail" href="mailto:contact@defence.gov.ng">contact@defence.gov.ng</a></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cream">
+      <div class="container">
+        <div class="section-head"><span class="eyebrow">Related</span><h2>Other departments.</h2></div>
+        <div class="grid grid-3">
+          <a href="department.html?d=joint-services" class="card"><div class="index">Civilian</div><h3>Joint Services</h3></a>
+          <a href="department.html?d=human-resources" class="card"><div class="index">Civilian</div><h3>Human Resources</h3></a>
+          <a href="department.html?d=prs" class="card"><div class="index">Civilian</div><h3>Planning, Research & Statistics</h3></a>
+          <a href="department.html?d=army-affairs" class="card"><div class="index">Civilian</div><h3>Army Affairs</h3></a>
+          <a href="department.html?d=navy-affairs" class="card"><div class="index">Civilian</div><h3>Navy Affairs</h3></a>
+          <a href="department.html?d=air-force-affairs" class="card"><div class="index">Civilian</div><h3>Air Force Affairs</h3></a>
+          <a href="department.html?d=finance-accounts" class="card"><div class="index">Civilian</div><h3>Finance & Accounts</h3></a>
+          <a href="department.html?d=procurement-dept" class="card"><div class="index">Civilian</div><h3>Procurement</h3></a>
+          <a href="department.html?d=legal" class="card"><div class="index">Civilian</div><h3>Legal Services</h3></a>
+          <a href="department.html?d=health-services" class="card"><div class="index">Civilian II</div><h3>Health Services</h3></a>
+          <a href="department.html?d=general-services" class="card"><div class="index">Civilian II</div><h3>General Services</h3></a>
+          <a href="department.html?d=public-relations" class="card"><div class="index">Civilian II</div><h3>Information, Press & Public Relations</h3></a>
+          <a href="department.html?d=education-services" class="card"><div class="index">Civilian II</div><h3>Education Services</h3></a>
+          <a href="department.html?d=internal-audit" class="card"><div class="index">Civilian II</div><h3>Internal Audit</h3></a>
+          <a href="department.html?d=reform-coordination" class="card"><div class="index">Civilian II</div><h3>Reform Coordination & Service Improvement</h3></a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div data-include="footer"></div>
+  <div data-include="chatbot"></div>
+  <div data-include="a11y"></div>
+
+  <script src="assets/js/realdata.js"></script>
+  <script src="assets/js/partials.js"></script>
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/i18n.js"></script>
+  <script src="assets/js/google-translate.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/chatbot.js"></script>
+  <script src="assets/js/departments-data.js"></script>
+  <script>
+    (function () {
+      const params = new URLSearchParams(location.search);
+      const slug = params.get("d") || "joint-services";
+      const dept = (window.MOD_DEPARTMENTS && window.MOD_DEPARTMENTS[slug]) || window.MOD_DEPARTMENTS["joint-services"];
+      document.getElementById("deptTitle").textContent = dept.name + ".";
+      document.getElementById("crumbDept").textContent = dept.name;
+      document.title = dept.name + " — Federal Ministry of Defence";
+      document.getElementById("deptCategory").textContent = dept.category;
+      document.getElementById("deptLead").textContent = dept.lead;
+      document.getElementById("mandateBody").innerHTML = dept.body;
+      document.getElementById("leaderTitle").textContent = dept.role || "Director";
+      document.getElementById("leaderName").textContent = dept.director || "Office of the Director";
+      if (dept.email) {
+        const el = document.getElementById("leaderEmail");
+        el.textContent = dept.email;
+        el.setAttribute("href", "mailto:" + dept.email);
+      }
+    })();
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="theme-color" content="#007D53" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Annual Reports — Federal Ministry of Defence</title>
+  <meta name="description" content="Annual reports and performance reviews published by the Federal Ministry of Defence, Federal Republic of Nigeria." />
+  <link rel="icon" type="image/png" href="assets/images/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;1,400&display=swap" />
+  <link rel="stylesheet" href="assets/css/style.css?v=19" />
+  <link rel="stylesheet" href="assets/css/mobile-nav.css" />
+  <style>
+    /* ── Report listing table ── */
+    .report-table { width: 100%; border-collapse: collapse; margin-top: 28px; }
+    .report-table thead tr { background: var(--ink); color: #fff; }
+    .report-table thead th { padding: 14px 18px; text-align: left; font-size: .82rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+    .report-table tbody tr { border-bottom: 1px solid var(--paper-3); transition: background .15s; }
+    .report-table tbody tr:hover { background: var(--paper-2); }
+    .report-table tbody td { padding: 16px 18px; font-size: .93rem; vertical-align: middle; }
+    .report-table .year { font-weight: 700; color: var(--ink); font-size: 1rem; white-space: nowrap; }
+    .report-table .desc { color: var(--ink-3); font-size: .87rem; margin-top: 3px; }
+    .report-table .actions { text-align: right; white-space: nowrap; }
+    .report-table .btn-sm { margin-left: 8px; }
+    .report-table .tag { display: inline-flex; font-size: .75rem; padding: 3px 10px; border-radius: 20px; }
+
+    /* ── Summary stat strip ── */
+    .stat-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin: 48px 0 12px; }
+    .stat-strip .stat-box { background: var(--paper-2); border-radius: var(--radius); padding: 28px 24px; text-align: center; }
+    .stat-strip .stat-box .num { font-family: 'Playfair Display', serif; font-size: 2.4rem; color: var(--green); line-height: 1; }
+    .stat-strip .stat-box .lbl { font-size: .82rem; color: var(--ink-3); margin-top: 6px; text-transform: uppercase; letter-spacing: .06em; }
+    @media (max-width: 640px) { .stat-strip { grid-template-columns: 1fr; } }
+
+    /* ── Archive note box ── */
+    .archive-note { background: var(--paper-2); border-left: 4px solid var(--gold); border-radius: var(--radius); padding: 20px 24px; margin-top: 40px; font-size: .92rem; color: var(--ink-2); }
+    .archive-note strong { color: var(--ink); }
+  </style>
+</head>
+<body>
+  <div data-include="header"></div>
+
+  <main id="main">
+    <section class="page-hero">
+      <div class="container">
+        <div class="crumbs"><a href="index.html">Home</a><span>›</span>Publications<span>›</span>Annual Reports</div>
+        <span class="eyebrow">Publications &amp; Accountability</span>
+        <h1>Annual Reports.</h1>
+        <p class="lead">In line with the Federal Government's commitment to transparency and public accountability, the Federal Ministry of Defence publishes an Annual Report covering policy implementation, budget performance, procurement activity, and operational achievements for each financial year.</p>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+
+        <!-- Stat strip -->
+        <div class="stat-strip">
+          <div class="stat-box"><div class="num">11</div><div class="lbl">Reports published</div></div>
+          <div class="stat-box"><div class="num">100%</div><div class="lbl">Open access — free to download</div></div>
+          <div class="stat-box"><div class="num">30</div><div class="lbl">Days after year-end (target)</div></div>
+        </div>
+
+        <div class="two-col" style="margin-top:48px;">
+          <div>
+            <span class="eyebrow">Reports Library</span>
+            <h2>Download a report.</h2>
+            <p>All reports are published in PDF format. Use the table below to download the version you need. Reports from 2014 onwards are available here; earlier editions can be requested via the <a href="foi.html">Freedom of Information</a> process.</p>
+
+            <table class="report-table" aria-label="Annual reports library">
+              <thead>
+                <tr>
+                  <th>Year</th>
+                  <th>Title</th>
+                  <th>Status</th>
+                  <th class="actions">Download</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="year">2024</td>
+                  <td>
+                    Annual Report &amp; Accounts 2024
+                    <div class="desc">Defence policy, budget outturn, capital projects and operations review</div>
+                  </td>
+                  <td><span class="tag gold">Latest</span></td>
+                  <td class="actions">
+                    <a href="#" class="btn btn-green btn-sm" onclick="alert('The 2024 Annual Report will be published shortly. Please check back or subscribe for updates.'); return false;">PDF</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="year">2023</td>
+                  <td>
+                    Annual Report &amp; Accounts 2023
+                    <div class="desc">Defence policy, budget outturn, capital projects and operations review</div>
+                  </td>
+                  <td><span class="tag" style="background:var(--paper-3);color:var(--ink-2);">Published</span></td>
+                  <td class="actions">
+                    <a href="#" class="btn btn-outline btn-sm" onclick="alert('Full download functionality will be active on site launch. Contact foi@defence.gov.ng to request this report now.'); return false;">PDF</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="year">2022</td>
+                  <td>
+                    Annual Report &amp; Accounts 2022
+                    <div class="desc">Defence policy, budget outturn, capital projects and operations review</div>
+                  </td>
+                  <td><span class="tag" style="background:var(--paper-3);color:var(--ink-2);">Published</span></td>
+                  <td class="actions">
+                    <a href="#" class="btn btn-outline btn-sm" onclick="alert('Full download functionality will be active on site launch. Contact foi@defence.gov.ng to request this report now.'); return false;">PDF</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="year">2021</td>
+                  <td>
+                    Annual Report &amp; Accounts 2021
+                    <div class="desc">Defence policy, budget outturn, capital projects and operations review</div>
+                  </td>
+                  <td><span class="tag" style="background:var(--paper-3);color:var(--ink-2);">Published</span></td>
+                  <td class="actions">
+                    <a href="#" class="btn btn-outline btn-sm" onclick="alert('Full download functionality will be active on site launch. Contact foi@defence.gov.ng to request this report now.'); return false;">PDF</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="year">2020</td>
+                  <td>
+                    Annual Report &amp; Accounts 2020
+                    <div class="desc">Defence policy, budget outturn, capital projects and operations review</div>
+                  </td>
+                  <td><span class="tag" style="background:var(--paper-3);color:var(--ink-2);">Published</span></td>
+                  <td class="actions">
+                    <a href="#" class="btn btn-outline btn-sm" onclick="alert('Full download functionality will be active on site launch. Contact foi@defence.gov.ng to request this report now.'); return false;">PDF</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="year">2019</td>
+                  <td>Annual Report &amp; Accounts 2019<div class="desc">Defence policy, budget outturn, capital projects and operations review</div></td>
+                  <td><span class="tag" style="background:var(--paper-3);color:var(--ink-2);">Published</span></td>
+                  <td class="actions"><a href="#" class="btn btn-outline btn-sm" onclick="alert('Contact foi@defence.gov.ng to request this report.'); return false;">PDF</a></td>
+                </tr>
+                <tr>
+                  <td class="year">2018</td>
+                  <td>Annual Report &amp; Accounts 2018<div class="desc">Defence policy, budget outturn, capital projects and operations review</div></td>
+                  <td><span class="tag" style="background:var(--paper-3);color:var(--ink-2);">Published</span></td>
+                  <td class="actions"><a href="#" class="btn btn-outline btn-sm" onclick="alert('Contact foi@defence.gov.ng to request this report.'); return false;">PDF</a></td>
+                </tr>
+                <tr>
+                  <td class="year">2017</td>
+                  <td>Annual Report &amp; Accounts 2017</td>
+                  <td><span class="tag" style="background:var(--paper-3);color:var(--ink-2);">Published</span></td>
+                  <td class="actions"><a href="#" class="btn btn-outline btn-sm" onclick="alert('Contact foi@defence.gov.ng to request this report.'); return false;">PDF</a></td>
+                </tr>
+                <tr>
+                  <td class="year">2016</td>
+                  <td>Annual Report &amp; Accounts 2016</td>
+                  <td><span class="tag" style="background:var(--paper-3);color:var(--ink-2);">Published</span></td>
+                  <td class="actions"><a href="#" class="btn btn-outline btn-sm" onclick="alert('Contact foi@defence.gov.ng to request this report.'); return false;">PDF</a></td>
+                </tr>
+                <tr>
+                  <td class="year">2015</td>
+                  <td>Annual Report &amp; Accounts 2015</td>
+                  <td><span class="tag" style="background:var(--paper-3);color:var(--ink-2);">Published</span></td>
+                  <td class="actions"><a href="#" class="btn btn-outline btn-sm" onclick="alert('Contact foi@defence.gov.ng to request this report.'); return false;">PDF</a></td>
+                </tr>
+                <tr>
+                  <td class="year">2014</td>
+                  <td>Annual Report &amp; Accounts 2014</td>
+                  <td><span class="tag" style="background:var(--paper-3);color:var(--ink-2);">Published</span></td>
+                  <td class="actions"><a href="#" class="btn btn-outline btn-sm" onclick="alert('Contact foi@defence.gov.ng to request this report.'); return false;">PDF</a></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="archive-note">
+              <strong>Reports before 2014.</strong> Earlier annual reports are held in the Ministry's archive. Submit a Freedom of Information request at <a href="foi.html">foi.html</a> or write to the FOI Desk Officer, Ship House, Area 10, Abuja.
+            </div>
+          </div>
+
+          <div>
+            <span class="eyebrow">About the Report</span>
+            <h2>What each report covers.</h2>
+            <ul>
+              <li><strong>Policy &amp; strategy</strong> — key defence policy decisions and direction from the Minister and Chief of Defence Staff.</li>
+              <li><strong>Budget performance</strong> — approved allocation vs. actual expenditure across all budget lines, including capital and recurrent.</li>
+              <li><strong>Procurement activity</strong> — summary of contracts awarded above the threshold, consistent with the Public Procurement Act, 2007.</li>
+              <li><strong>Operations &amp; achievements</strong> — summary of operational activities by the Nigerian Army, Navy and Air Force, and joint operations.</li>
+              <li><strong>Human resources</strong> — staffing levels, promotions, retirements and training completions across the Ministry and agencies.</li>
+              <li><strong>Key performance indicators</strong> — progress against the Ministry's service charter commitments and SERVICOM targets.</li>
+              <li><strong>Auditor-General's remarks</strong> — extract of findings and management responses from the Office of the Auditor-General for the Federation.</li>
+            </ul>
+
+            <div class="alert gold" style="margin-top:32px;">
+              <strong>Subscribe for updates.</strong> Sign up to the Ministry newsletter at the bottom of the home page to be notified when new annual reports are published.
+            </div>
+
+            <h3 style="margin-top:36px;">Related publications</h3>
+            <ul>
+              <li><a href="foi.html">FOI Annual Statistics</a></li>
+              <li><a href="procurement.html">Procurement Notices</a></li>
+              <li><a href="servicom.html">SERVICOM Performance</a></li>
+              <li><a href="services.html#downloads">Other Downloads</a></li>
+            </ul>
+
+            <h3 style="margin-top:32px;">Hard-copy requests</h3>
+            <p>To request a printed copy of any report, write to:</p>
+            <address style="font-style:normal; line-height:1.8; color:var(--ink-2); font-size:.92rem;">
+              Director, Reform Coordination &amp; Service Improvement<br>
+              Federal Ministry of Defence<br>
+              Ship House, Area 10, Abuja<br>
+              <a href="mailto:publications@defence.gov.ng">publications@defence.gov.ng</a>
+            </address>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <div data-include="footer"></div>
+  <div data-include="chatbot"></div>
+  <div data-include="a11y"></div>
+
+  <script src="assets/js/realdata.js"></script>
+  <script src="assets/js/partials.js"></script>
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/i18n.js"></script>
+  <script src="assets/js/google-translate.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/chatbot.js"></script>
+</body>
+</html>

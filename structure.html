@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="theme-color" content="#007D53" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Our Structure — Federal Ministry of Defence</title>
+  <meta name="description" content="The organisational structure of the Federal Ministry of Defence — political leadership, the Permanent Secretary, departments and parastatals." />
+  <link rel="icon" type="image/png" href="assets/images/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;1,400&display=swap" />
+  <link rel="stylesheet" href="assets/css/style.css?v=19" />
+  <link rel="stylesheet" href="assets/css/mobile-nav.css" />
+  <style>
+    .org-tree { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 36px; }
+    .org-tier { display:flex; gap:18px; justify-content:center; flex-wrap:wrap; margin-bottom:28px; }
+    .org-node { background:#fff; border:1px solid var(--line); border-radius: var(--radius); padding:16px 22px; min-width:200px; text-align:center; box-shadow: var(--shadow-s); }
+    .org-node.crown { background: var(--green); color:#fff; border-color: var(--green); }
+    .org-node.gold { background: var(--gold); color: var(--ink); border-color: var(--gold); }
+    .org-node h4 { font-size:.92rem; margin:0; line-height:1.3; }
+    .org-node.crown h4, .org-node.gold h4 { color: inherit; }
+    .org-node .role { font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; opacity:.7; margin-top:6px; }
+    .org-tier::before, .org-tier:after { display:none; }
+  </style>
+</head>
+<body>
+  <div data-include="header"></div>
+
+  <main id="main">
+    <section class="page-hero">
+      <div class="container">
+        <div class="crumbs"><a href="index.html">Home</a><span>›</span><a href="about.html">The Ministry</a><span>›</span>Our Structure</div>
+        <span class="eyebrow">The Ministry</span>
+        <h1>Our Structure.</h1>
+        <p class="lead">From political leadership through the Permanent Secretary to the operational components and parastatals, this is how the Federal Ministry of Defence is organised.</p>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <div class="org-tree">
+          <div class="org-tier">
+            <div class="org-node crown"><h4>President & C-in-C of the Armed Forces</h4><div class="role">Federal Republic of Nigeria</div></div>
+          </div>
+          <div class="org-tier">
+            <div class="org-node gold"><h4>Honourable Minister of Defence</h4><div class="role">Political Leadership</div></div>
+            <div class="org-node gold"><h4>Honourable Minister of State</h4><div class="role">Political Leadership</div></div>
+          </div>
+          <div class="org-tier">
+            <div class="org-node"><h4>Permanent Secretary</h4><div class="role">Accounting Officer</div></div>
+          </div>
+          <div class="org-tier">
+            <div class="org-node"><h4>Defence Headquarters</h4><div class="role">CDS · Joint Command</div></div>
+            <div class="org-node"><h4>Nigerian Army</h4><div class="role">COAS</div></div>
+            <div class="org-node"><h4>Nigerian Navy</h4><div class="role">CNS</div></div>
+            <div class="org-node"><h4>Nigerian Air Force</h4><div class="role">CAS</div></div>
+          </div>
+          <div class="org-tier">
+            <div class="org-node"><h4>Departments</h4><div class="role">15 Directorates</div></div>
+            <div class="org-node"><h4>Agencies & Parastatals</h4><div class="role">NDA · NDC · AFCSC · DICON · NAFRC · MPB · DIA</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cream">
+      <div class="container">
+        <div class="section-head"><span class="eyebrow">Tiers</span><h2>How decisions flow.</h2></div>
+        <div class="two-col">
+          <div>
+            <h3>Political tier</h3>
+            <p>The Honourable Minister and the Minister of State are the political leadership, accountable to the President and the National Assembly. They direct policy, defend the Ministry's budget and represent the Government on defence matters.</p>
+            <h3 style="margin-top:32px;">Administrative tier</h3>
+            <p>The Permanent Secretary heads the Civil Service side of the Ministry and is the accounting officer. The PS provides continuity across political cycles, leads departmental directors and chairs the Ministerial Tenders Board.</p>
+          </div>
+          <div>
+            <h3>Operational tier</h3>
+            <p>The Defence Headquarters, under the Chief of Defence Staff, exercises joint operational command over the Nigerian Army, Nigerian Navy and Nigerian Air Force — each headed by its own Chief of Service.</p>
+            <h3 style="margin-top:32px;">Parastatal tier</h3>
+            <p>Agencies and parastatals — NDA, NDC, AFCSC, DICON, NAFRC, MPB, DIA — operate under MOD oversight with statutory mandates ranging from training to industrial production to welfare administration.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div data-include="footer"></div>
+  <div data-include="chatbot"></div>
+  <div data-include="a11y"></div>
+
+  <script src="assets/js/realdata.js"></script>
+  <script src="assets/js/partials.js"></script>
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/i18n.js"></script>
+  <script src="assets/js/google-translate.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/chatbot.js"></script>
+</body>
+</html>
+

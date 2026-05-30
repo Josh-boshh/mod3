@@ -1,0 +1,77 @@
+@media (max-width: 980px) {
+
+  /* ── Navbar ────────────────────────────────────────────────────────────────── */
+  .navbar .container { padding-left: 15px; padding-right: 15px; }
+  .nav-inner { padding: 20px 0; gap: 24px; }
+  .brand { margin-left: 8px; gap: 8px; }
+
+  /* Logo: slightly bigger than before */
+  .brand-logo { width: 32px !important; height: 32px !important; }
+
+  /* Ministry name: sized to visually match country width */
+  .brand-text .ministry { font-size: 15px !important; line-height: 1.3; }
+
+  /* Country name: slightly bigger, forced single line */
+  .brand-text .country {
+    font-size: 9px !important;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    opacity: 0.7;
+    margin-top: 2px;
+    line-height: 1.2;
+    white-space: nowrap !important;
+  }
+
+  .mobile-toggle {
+    padding: 10px 14px;
+    min-height: 0 !important;
+    margin-left: auto;
+    margin-right: 10px !important;
+  }
+
+  /* ── Mobile dropdown menu: slimmer items, top-level only ──────────────────── */
+  .menu {
+    border-radius: 8px !important;
+    padding: 4px 0 10px !important;
+  }
+  .menu > li > a {
+    padding: 9px 16px !important;
+    font-size: .82rem !important;
+  }
+  .menu .submenu,
+  .menu .submenu-wide { display: none !important; }
+}
+
+@media (max-width: 768px) {
+
+  /* ── Hero: shorter on mobile ───────────────────────────────────────────────── */
+  .hero,
+  .hero.hero-clean {
+    height: 48vh !important;
+    min-height: 260px !important;
+    max-height: 400px !important;
+  }
+
+  /* ── Intro buttons: same width, same row, text fits one line ───────────────── */
+  .btn-group { flex-wrap: nowrap; align-items: stretch; }
+  .btn-group .btn {
+    flex: 1;
+    justify-content: center;
+    text-align: center;
+    padding: 10px 6px;
+    font-size: .55rem;
+  }
+
+  /* ── Logo slider: slimmer on mobile ────────────────────────────────────────── */
+  .logo-slide { padding: 12px 20px !important; }
+  .logo-slide img { height: 30px !important; }
+  .logo-slide span { font-size: .58rem; }
+
+  /* ── Footer: hide the two link columns, keep brand + useful links/newsletter ── */
+  .footer-grid > div:nth-child(2),
+  .footer-grid > div:nth-child(3) { display: none; }
+  .footer-grid { grid-template-columns: 1fr !important; gap: 28px !important; }
+  .footer { padding: 40px 0 28px; }
+  .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+  .footer-bottom .legal { justify-content: center; gap: 16px; }
+}

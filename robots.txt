@@ -1,0 +1,7 @@
+# Federal Ministry of Defence — robots.txt
+# https://defence.gov.ng/
+
+User-agent: *
+Allow: /
+
+Sitemap: https://defence.gov.ng/sitemap.xml
