@@ -60,19 +60,20 @@
           <div>
             <span class="eyebrow">Send us a message</span>
             <h2>General enquiry.</h2>
-            <form class="form-grid mod-recaptcha-form" data-form-type="contact" data-success-message="Thank you. Your message has been sent. We will reply within 3 working days." onsubmit="return window.modRecaptchaSubmit(this, event);" style="margin-top:18px;">
+            <form class="form-grid" data-form-type="contact" data-success-message="Thank you. Your message has been sent. We will reply within 3 working days." onsubmit="return window.modFormSubmit(this, event);" style="margin-top:18px;">
               <div><label for="c-name">Full name</label><input id="c-name" name="name" type="text" required /></div>
               <div><label for="c-email">Email</label><input id="c-email" name="email" type="email" required /></div>
               <div class="full"><label for="c-subject">Subject</label><input id="c-subject" name="subject" type="text" required /></div>
               <div class="full"><label for="c-msg">Message</label><textarea id="c-msg" name="message" required></textarea></div>
               <div class="full">
-                <div class="mod-recaptcha-widget" aria-label="reCAPTCHA widget"></div>
-                <input type="hidden" name="recaptcha_response" class="mod-recaptcha-response" value="" />
-                <div class="captcha-error" role="alert" aria-live="assertive" style="display:none; align-items:center; gap:8px; margin-top:8px; font-size:.83rem; color:var(--red);">
+                <div class="form-error" role="alert" aria-live="assertive" style="display:none; align-items:center; gap:8px; margin-top:8px; font-size:.83rem; color:var(--red);">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                  <span class="captcha-error-message">Please complete the CAPTCHA to continue.</span>
+                  <span class="form-error-message"></span>
                 </div>
               </div>
+              <!-- Honeypot: hidden from users, filled only by bots -->
+              <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;" />
+              <input type="hidden" name="form_loaded_at" class="mod-form-ts" value="" />
               <div class="full"><button class="btn btn-green" type="submit">Send message</button></div>
             </form>
           </div>

@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../spam_protection.php';
 runMigrations();
 header('Content-Type: application/json; charset=utf-8');
 
@@ -16,19 +17,14 @@ if ($method === 'GET') {
     $params = [];
     $sql    = 'SELECT * FROM mod_submissions';
     if ($type) {
-        $sql    .= ' WHERE form_type = :type';
+        $sql   .= ' WHERE form_type = :type';
         $params['type'] = $type;
     }
     $sql .= ' ORDER BY submitted_at DESC';
     $rows = safeDbFetchAll($sql, $params);
-    // Decode meta JSON for each row
     foreach ($rows as &$row) {
-        if (!empty($row['meta'])) {
-            $decoded = json_decode($row['meta'], true);
-            $row['meta'] = is_array($decoded) ? $decoded : [];
-        } else {
-            $row['meta'] = [];
-        }
+        $decoded      = !empty($row['meta']) ? json_decode($row['meta'], true) : [];
+        $row['meta']  = is_array($decoded) ? $decoded : [];
     }
     unset($row);
     echo json_encode(['submissions' => $rows]);
@@ -61,21 +57,41 @@ if ($method !== 'POST') {
     exit;
 }
 
-$body      = json_decode(file_get_contents('php://input'), true);
-$formType  = trim($body['form_type'] ?? '');
-$name      = trim($body['name'] ?? '');
-$email     = filter_var(trim($body['email'] ?? ''), FILTER_VALIDATE_EMAIL);
+$body = json_decode(file_get_contents('php://input'), true) ?? [];
 
+// ── Layer 1: Honeypot ────────────────────────────────────────────────────────
+if (spamHoneypotFilled($body)) {
+    spamReject('submissions', 'honeypot', 'Your submission could not be processed. Please try again.');
+}
+
+// ── Layer 2: Timing gate ─────────────────────────────────────────────────────
+if (spamTooFast($body)) {
+    spamReject('submissions', 'too_fast', 'Your submission could not be processed. Please take a moment to review your message and try again.');
+}
+
+// ── Layer 3: Rate limiting ───────────────────────────────────────────────────
+if (spamRateLimited('submissions', SPAM_SUBMIT_LIMIT, SPAM_SUBMIT_WINDOW)) {
+    http_response_code(429);
+    echo json_encode(['error' => 'Too many submissions. Please wait a while before trying again.']);
+    exit;
+}
+
+// ── Layer 5: Input validation & sanitisation ─────────────────────────────────
 $allowedTypes = ['contact', 'foi', 'servicom'];
+$formType     = spamSanitizeText($body['form_type'] ?? '', 32);
+
 if (!in_array($formType, $allowedTypes, true)) {
     http_response_code(400);
     echo json_encode(['error' => 'Unknown form type.']);
     exit;
 }
 
+$name  = spamSanitizeText($body['name']  ?? '', 255);
+$email = spamSanitizeEmail($body['email'] ?? '');
+
 if (!$name) {
     http_response_code(400);
-    echo json_encode(['error' => 'Name is required.']);
+    echo json_encode(['error' => 'Full name is required.']);
     exit;
 }
 
@@ -85,55 +101,61 @@ if (!$email) {
     exit;
 }
 
-// ── Optional reCAPTCHA verification ─────────────────────────────────────────
-$recaptchaSecret = (defined('RECAPTCHA_SECRET') && RECAPTCHA_SECRET) ? RECAPTCHA_SECRET : '';
-if ($recaptchaSecret) {
-    $token = trim($body['recaptcha_token'] ?? '');
-    if (!$token) {
-        http_response_code(400);
-        echo json_encode(['error' => 'reCAPTCHA token is required.']);
-        exit;
-    }
-    $verifyUrl = 'https://www.google.com/recaptcha/api/siteverify';
-    $resp = @file_get_contents(
-        $verifyUrl
-        . '?secret='   . urlencode($recaptchaSecret)
-        . '&response=' . urlencode($token)
-        . '&remoteip=' . urlencode($_SERVER['REMOTE_ADDR'] ?? '')
-    );
-    $data = $resp ? json_decode($resp, true) : null;
-    if (!$data || empty($data['success'])) {
-        http_response_code(400);
-        echo json_encode(['error' => 'reCAPTCHA verification failed.']);
-        exit;
-    }
-}
-
-// ── Build meta blob with remaining fields ────────────────────────────────────
-$reserved = ['form_type', 'name', 'email', 'recaptcha_token'];
-$meta     = [];
-foreach ($body as $k => $v) {
-    if (!in_array($k, $reserved, true)) {
-        $meta[$k] = is_string($v) ? trim($v) : $v;
-    }
-}
-
-// ── Derive a short subject line ───────────────────────────────────────────────
+// Form-specific required fields
 switch ($formType) {
     case 'contact':
-        $subject = trim($body['subject'] ?? '') ?: '(no subject)';
+        $subjectRaw = spamSanitizeText($body['subject']  ?? '', 255);
+        $message    = spamSanitizeText($body['message']  ?? '', 5000);
+        if (!$subjectRaw || !$message) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Subject and message are required.']);
+            exit;
+        }
+        $subject = $subjectRaw;
         break;
+
     case 'foi':
-        $subject = trim($body['subject'] ?? '') ?: '(FOI request)';
+        $subjectRaw = spamSanitizeText($body['subject']  ?? '', 255);
+        $details    = spamSanitizeText($body['details']  ?? '', 5000);
+        if (!$subjectRaw || !$details) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Subject and request details are required.']);
+            exit;
+        }
+        $subject = $subjectRaw;
         break;
+
     case 'servicom':
-        $subject = trim($body['where'] ?? '') ?: '(SERVICOM complaint)';
+        $where   = spamSanitizeText($body['where']   ?? '', 255);
+        $details = spamSanitizeText($body['details'] ?? '', 5000);
+        if (!$where || !$details) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Location and complaint details are required.']);
+            exit;
+        }
+        $subject = $where ?: '(SERVICOM complaint)';
         break;
+
     default:
         $subject = '(submission)';
 }
 
-// ── Persist ───────────────────────────────────────────────────────────────────
+// ── Layer 4: Duplicate detection ─────────────────────────────────────────────
+if (spamDuplicate($formType, $email, $subject)) {
+    // Return a success-like message so legitimate double-submitters aren't confused
+    echo json_encode(['success' => true]);
+    exit;
+}
+
+// ── Persist (strip reserved / spam fields from meta) ─────────────────────────
+$reserved = ['form_type', 'name', 'email', 'website', 'form_loaded_at'];
+$meta     = [];
+foreach ($body as $k => $v) {
+    if (!in_array($k, $reserved, true) && is_string($v)) {
+        $meta[$k] = spamSanitizeText($v, 5000);
+    }
+}
+
 dbQuery(
     'INSERT INTO mod_submissions (form_type, name, email, subject, meta, submitted_at)
      VALUES (:form_type, :name, :email, :subject, :meta, NOW())',

@@ -234,101 +234,47 @@
   }
 })();
 
-/* ── Newsletter honeypot + timing guard ───────────────────────────────────── */
+/* ── Form protection (honeypot + timing + spam guards) ────────────────────── */
 (function () {
   'use strict';
 
-  function initRecaptchaWidgets() {
-    // Stamp a load timestamp into every newsletter form on the page
+  // Compute the API base once for all handlers in this IIFE
+  var apiBase = (function () {
+    var proto    = window.location.protocol + '//';
+    var host     = window.location.host;
+    var pathname = window.location.pathname;
+    var adminIdx = pathname.indexOf('/admin/');
+    if (adminIdx !== -1) {
+      return proto + host + pathname.substring(0, adminIdx) + '/admin/api/';
+    }
+    var dir = pathname.replace(/\/[^/]*$/, '') || '/';
+    if (!dir.endsWith('/')) dir += '/';
+    return proto + host + dir + 'admin/api/';
+  }());
+
+  // Stamp all load-time fields on DOMContentLoaded so the server can
+  // calculate how long the user took before submitting
+  function stampLoadTimes() {
+    var ts = Date.now().toString();
     document.querySelectorAll('.mod-form-ts').forEach(function (el) {
-      el.value = Date.now().toString();
-    });
-    var siteKey = (window.MOD_CONFIG && window.MOD_CONFIG.RECAPTCHA_SITE_KEY) || '';
-    if (!siteKey) return;
-
-    var renderRecaptcha = function () {
-      document.querySelectorAll('.mod-recaptcha-widget').forEach(function (container) {
-        if (container.dataset.widgetId) return;
-        var form = container.closest('form');
-        if (!form) return;
-        var responseInput = form.querySelector('.mod-recaptcha-response');
-        if (!responseInput) return;
-
-        var widgetId = window.grecaptcha.render(container, {
-          sitekey: siteKey,
-          callback: function (token) {
-            responseInput.value = token;
-          },
-          'expired-callback': function () {
-            responseInput.value = '';
-          },
-          'error-callback': function () {
-            responseInput.value = '';
-          }
-        });
-        container.dataset.widgetId = widgetId;
-      });
-    };
-
-    var loadRecaptcha = function () {
-      return new Promise(function (resolve, reject) {
-        if (window.grecaptcha && window.grecaptcha.render) return resolve(window.grecaptcha);
-        window.__modRecaptchaOnload = function () {
-          resolve(window.grecaptcha);
-        };
-        var script = document.createElement('script');
-        script.src = 'https://www.google.com/recaptcha/api.js?onload=__modRecaptchaOnload&render=explicit';
-        script.async = true;
-        script.defer = true;
-        script.onerror = function () { reject(new Error('reCAPTCHA script failed to load')); };
-        document.head.appendChild(script);
-      });
-    };
-
-    loadRecaptcha().then(function () {
-      if (window.grecaptcha) {
-        renderRecaptcha();
-      }
-    }).catch(function (err) {
-      console.warn('[modNewsletterSubmit] reCAPTCHA load failed:', err);
+      el.value = ts;
     });
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initRecaptchaWidgets);
+    document.addEventListener('DOMContentLoaded', stampLoadTimes);
   } else {
-    initRecaptchaWidgets();
+    stampLoadTimes();
   }
 
-  /**
-   * modNewsletterSubmit — called by the footer newsletter form's onsubmit.
-   * Returns false to block submission if a bot is detected.
-   */
+  // ── Newsletter form ─────────────────────────────────────────────────────────
+
   window.modNewsletterSubmit = function (form, e) {
     e.preventDefault();
 
-    // 1. Honeypot check — real users never fill the hidden field
-    var honeypot = form.querySelector('input[name="website"]');
-    if (honeypot && honeypot.value.trim() !== '') {
-      // Bot detected — silently succeed so bots don't retry
-      form.reset();
-      return false;
-    }
-
-    // 2. Timing check — real users take at least 1.5 s to fill the form
-    var tsEl = form.querySelector('.mod-form-ts');
-    if (tsEl && tsEl.value) {
-      var elapsed = Date.now() - parseInt(tsEl.value, 10);
-      if (elapsed < 1500) {
-        form.reset();
-        return false;
-      }
-    }
-
-    // 3. Passed — process subscription
-    var emailInput = form.querySelector('input[type="email"]');
-    var email = emailInput ? String(emailInput.value || '').trim() : '';
+    var tsEl     = form.querySelector('.mod-form-ts');
     var feedback = form.querySelector('.newsletter-form-feedback');
+
     var showMessage = function (message, success) {
       if (feedback) {
         feedback.textContent = message;
@@ -339,94 +285,78 @@
       }
     };
 
+    var emailInput = form.querySelector('input[type="email"]');
+    var email = emailInput ? String(emailInput.value || '').trim() : '';
     if (!email) {
       showMessage('Please enter a valid email address.', false);
       return false;
     }
 
-    var siteKey = (window.MOD_CONFIG && window.MOD_CONFIG.RECAPTCHA_SITE_KEY) || '';
-    var responseInput = form.querySelector('.mod-recaptcha-response');
-    var recaptchaResponse = responseInput ? String(responseInput.value || '').trim() : '';
-
     function finishAndReset() {
       form.reset();
       if (tsEl) tsEl.value = Date.now().toString();
-      if (window.grecaptcha) {
-        var container = form.querySelector('.mod-recaptcha-widget');
-        if (container && container.dataset.widgetId) {
-          window.grecaptcha.reset(parseInt(container.dataset.widgetId, 10));
-        }
-      }
     }
 
-    // If reCAPTCHA site key provided, require the visible checkbox response
-    if (siteKey) {
-      if (!recaptchaResponse) {
-        showMessage('Please verify that you are not a robot.', false);
-        return false;
-      }
-      if (window.MOD_STORE && typeof window.MOD_STORE.syncSubscriber === 'function') {
-        window.MOD_STORE.syncSubscriber(email, recaptchaResponse).then(function (res) {
-          if (res && res.success) {
-            showMessage('Thank you! Your subscription was sent successfully.');
-          } else if (res && res.error) {
-            showMessage(res.error, false);
-          } else {
-            showMessage('Thank you! Your subscription was received.');
-          }
-        }).catch(function () {
-          showMessage('The subscription request could not be completed. Please try again.', false);
-        }).finally(function () { finishAndReset(); });
-        return false;
-      }
+    // Collect the full payload (includes honeypot + form_loaded_at for server checks)
+    var payload = { action: 'add', email: email };
+    var elements = form.elements;
+    for (var i = 0; i < elements.length; i++) {
+      var el = elements[i];
+      if (!el.name || el.name === 'email' || el.name === 'action') continue;
+      payload[el.name] = el.value;
     }
 
-    // No reCAPTCHA configured — use existing local behaviour and notify backend
     if (window.MOD_STORE && typeof window.MOD_STORE.syncSubscriber === 'function') {
-      window.MOD_STORE.syncSubscriber(email).then(function (res) {
+      window.MOD_STORE.syncSubscriberFull(payload).then(function (res) {
         if (res && res.success) {
-          showMessage('Thank you! Your subscription was sent successfully.');
+          showMessage('Thank you! You have been subscribed successfully.', true);
         } else if (res && res.error) {
           showMessage(res.error, false);
         } else {
-          showMessage('Thank you! Your subscription was received.');
+          showMessage('Thank you! Your subscription was received.', true);
         }
       }).catch(function () {
-        showMessage('Thank you! Your subscription was received.');
+        showMessage('The subscription request could not be completed. Please try again.', false);
       }).finally(function () { finishAndReset(); });
       return false;
     }
 
-    // Last-resort fallback
-    var subscribed = false;
-    if (window.MOD_STORE && typeof window.MOD_STORE.addSubscriber === 'function') {
-      subscribed = window.MOD_STORE.addSubscriber(email);
-    }
-    if (subscribed) {
-      showMessage('Thank you! Your subscription was sent successfully.');
-    } else {
-      showMessage('This email is already subscribed or could not be added.', false);
-    }
-    finishAndReset();
+    // Fallback: post directly if MOD_STORE not available
+    fetch(apiBase + 'subscribe.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      if (data && data.success) {
+        showMessage('Thank you! You have been subscribed successfully.', true);
+      } else {
+        showMessage((data && data.error) || 'Could not complete subscription. Please try again.', false);
+      }
+    })
+    .catch(function () {
+      showMessage('Could not complete subscription. Please check your connection.', false);
+    })
+    .finally(function () { finishAndReset(); });
+
     return false;
   };
 
-  window.modRecaptchaSubmit = function (form, e) {
+  // ── Contact / FOI / SERVICOM forms ─────────────────────────────────────────
+
+  window.modFormSubmit = function (form, e) {
     e.preventDefault();
-    var responseInput = form.querySelector('.mod-recaptcha-response');
-    var recaptchaResponse = responseInput ? String(responseInput.value || '').trim() : '';
-    var errorEl = form.querySelector('.captcha-error');
-    var errorText = errorEl ? errorEl.querySelector('.captcha-error-message') : null;
+
+    var errorEl   = form.querySelector('.form-error');
+    var errorText = errorEl ? errorEl.querySelector('.form-error-message') : null;
     var submitBtn = form.querySelector('button[type="submit"]');
 
     var showError = function (message) {
       if (errorEl) {
         errorEl.style.display = 'flex';
-        if (errorText) {
-          errorText.textContent = message;
-        } else {
-          errorEl.textContent = message;
-        }
+        if (errorText) { errorText.textContent = message; }
+        else           { errorEl.textContent   = message; }
       } else {
         alert(message);
       }
@@ -436,19 +366,15 @@
       if (errorEl) errorEl.style.display = 'none';
     };
 
-    if (!recaptchaResponse) {
-      showError('Please verify that you are not a robot.');
-      return false;
-    }
-
     hideError();
 
-    // Collect all named form fields into a payload
-    var payload = { recaptcha_token: recaptchaResponse };
+    // Collect all named form fields into the payload
+    // (includes website honeypot and form_loaded_at — the server validates both)
+    var payload  = {};
     var elements = form.elements;
     for (var i = 0; i < elements.length; i++) {
       var el = elements[i];
-      if (!el.name || el.name === 'recaptcha_response') continue;
+      if (!el.name) continue;
       if (el.type === 'checkbox' || el.type === 'radio') {
         if (el.checked) payload[el.name] = el.value;
       } else {
@@ -456,65 +382,38 @@
       }
     }
 
-    // Determine form_type from a data attribute or the page URL
+    // Derive form_type from the data attribute or page URL
     var formType = form.dataset.formType || '';
     if (!formType) {
       var path = window.location.pathname.toLowerCase();
-      if (path.indexOf('servicom') !== -1)      { formType = 'servicom'; }
-      else if (path.indexOf('foi') !== -1)      { formType = 'foi'; }
-      else if (path.indexOf('contact') !== -1)  { formType = 'contact'; }
-      else                                       { formType = 'contact'; }
+      if (path.indexOf('servicom') !== -1)    { formType = 'servicom'; }
+      else if (path.indexOf('foi') !== -1)    { formType = 'foi'; }
+      else                                    { formType = 'contact'; }
     }
     payload.form_type = formType;
 
-    // Derive the correct API base regardless of how deep in the path we are
-    var apiBase = (function () {
-      var loc   = window.location.href;
-      var proto = loc.split('//')[0] + '//';
-      var rest  = loc.split('//').slice(1).join('//');
-      var host  = rest.split('/')[0];
-      // Find the site root by looking for /admin/ or falling back to path segments
-      var path  = window.location.pathname;
-      var adminIdx = path.indexOf('/admin/');
-      if (adminIdx !== -1) {
-        return proto + host + path.substring(0, adminIdx) + '/admin/api/';
-      }
-      // Walk up until we find the root (assume max 3 levels deep)
-      var parts = path.replace(/\/[^/]*$/, '').split('/').filter(Boolean);
-      // For root-level pages like /contact.html the path root is just /
-      return proto + host + '/' + (parts.length > 0 ? parts[0] + '/' : '') + 'admin/api/';
-    }());
-
-    // Disable button while submitting
     if (submitBtn) {
-      submitBtn.disabled = true;
-      submitBtn._origText = submitBtn.textContent;
+      submitBtn.disabled    = true;
+      submitBtn._origText   = submitBtn.textContent;
       submitBtn.textContent = 'Sending…';
     }
 
     var successMessage = form.dataset.successMessage || 'Thank you. Your submission has been received.';
 
     fetch(apiBase + 'submissions.php', {
-      method: 'POST',
+      method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body:    JSON.stringify(payload)
     })
     .then(function (res) { return res.json(); })
     .then(function (data) {
       if (data && data.success) {
-        // Replace form contents with success message
         var successEl = document.createElement('div');
         successEl.className = 'alert green';
         successEl.style.cssText = 'padding:14px 18px; border-radius:8px; background:var(--green-soft,#e8f4e8); color:var(--green,#1a4f1a); font-weight:600; margin-top:12px;';
         successEl.textContent = successMessage;
         form.parentNode.insertBefore(successEl, form);
         form.style.display = 'none';
-        if (window.grecaptcha) {
-          var container = form.querySelector('.mod-recaptcha-widget');
-          if (container && container.dataset.widgetId) {
-            window.grecaptcha.reset(parseInt(container.dataset.widgetId, 10));
-          }
-        }
       } else {
         showError((data && data.error) ? data.error : 'Your submission could not be sent. Please try again.');
         if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = submitBtn._origText; }
@@ -527,4 +426,4 @@
 
     return false;
   };
-})();
+}());

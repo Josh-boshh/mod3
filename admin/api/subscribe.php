@@ -1,9 +1,11 @@
 <?php
 require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../spam_protection.php';
 header('Content-Type: application/json; charset=utf-8');
 
 $method = $_SERVER['REQUEST_METHOD'];
 
+// ── GET: list subscribers (admin only) ──────────────────────────────────────
 if ($method === 'GET') {
     if (!isAdminLoggedIn()) {
         http_response_code(403);
@@ -15,39 +17,54 @@ if ($method === 'GET') {
     exit;
 }
 
-$body = json_decode(file_get_contents('php://input'), true);
+// ── DELETE: unsubscribe (admin only) ─────────────────────────────────────────
+if ($method === 'DELETE') {
+    if (!isAdminLoggedIn()) {
+        http_response_code(403);
+        echo json_encode(['error' => 'Unauthorized.']);
+        exit;
+    }
+    $body  = json_decode(file_get_contents('php://input'), true);
+    $email = filter_var(trim($body['email'] ?? ''), FILTER_VALIDATE_EMAIL);
+    if (!$email) {
+        http_response_code(400);
+        echo json_encode(['error' => 'A valid email address is required.']);
+        exit;
+    }
+    dbQuery('DELETE FROM mod_subscribers WHERE email = ?', [$email]);
+    echo json_encode(['success' => true]);
+    exit;
+}
+
+// ── POST: public subscription ─────────────────────────────────────────────────
+if ($method !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['error' => 'Method not allowed.']);
+    exit;
+}
+
+$body   = json_decode(file_get_contents('php://input'), true) ?? [];
 $action = $body['action'] ?? 'add';
-$email = filter_var(trim($body['email'] ?? ''), FILTER_VALIDATE_EMAIL);
 
-// Optional reCAPTCHA verification: if a server secret constant is defined, require and verify token.
-$recaptcha_secret = '';
-if (defined('RECAPTCHA_SECRET') && RECAPTCHA_SECRET) {
-    $recaptcha_secret = RECAPTCHA_SECRET;
-}
-if ($recaptcha_secret) {
-    $recaptcha_token = trim($body['recaptcha_token'] ?? '');
-    if (!$recaptcha_token) {
-        http_response_code(400);
-        echo json_encode(['error' => 'reCAPTCHA token is required.']);
-        exit;
-    }
-    // Verify with Google
-    $verify_url = 'https://www.google.com/recaptcha/api/siteverify';
-    $resp = @file_get_contents($verify_url . '?secret=' . urlencode($recaptcha_secret) . '&response=' . urlencode($recaptcha_token) . '&remoteip=' . ($_SERVER['REMOTE_ADDR'] ?? ''));
-    $data = $resp ? json_decode($resp, true) : null;
-    if (!$data || empty($data['success'])) {
-        http_response_code(400);
-        echo json_encode(['error' => 'reCAPTCHA verification failed.']);
-        exit;
-    }
-    // If v3 is used, optionally check score (avoid blocking too strictly)
-    if (isset($data['score']) && $data['score'] < 0.3) {
-        http_response_code(400);
-        echo json_encode(['error' => 'reCAPTCHA score too low.']);
-        exit;
-    }
+// ── Layer 1: Honeypot ────────────────────────────────────────────────────────
+if (spamHoneypotFilled($body)) {
+    spamReject('subscribe', 'honeypot', 'Your request could not be processed. Please try again.');
 }
 
+// ── Layer 2: Timing gate ─────────────────────────────────────────────────────
+if (spamTooFast($body)) {
+    spamReject('subscribe', 'too_fast', 'Your request could not be processed. Please try again in a moment.');
+}
+
+// ── Layer 3: Rate limiting ────────────────────────────────────────────────────
+if (spamRateLimited('subscribe', SPAM_SUB_LIMIT, SPAM_SUB_WINDOW)) {
+    http_response_code(429);
+    echo json_encode(['error' => 'Too many requests. Please wait a while before trying again.']);
+    exit;
+}
+
+// ── Layer 5: Input validation ─────────────────────────────────────────────────
+$email = spamSanitizeEmail($body['email'] ?? '');
 if (!$email) {
     http_response_code(400);
     echo json_encode(['error' => 'A valid email address is required.']);
@@ -55,18 +72,18 @@ if (!$email) {
 }
 
 if ($action === 'add') {
-    dbQuery('INSERT IGNORE INTO mod_subscribers (email, subscribed_at) VALUES (:email, NOW())', ['email' => $email]);
-    echo json_encode(['success' => true]);
-    exit;
-}
-
-if ($action === 'remove') {
-    if (!isAdminLoggedIn()) {
-        http_response_code(403);
-        echo json_encode(['error' => 'Unauthorized.']);
+    // Duplicate detection: already subscribed?
+    $existing = dbFetch('SELECT 1 FROM mod_subscribers WHERE email = ? LIMIT 1', [$email]);
+    if ($existing) {
+        // Return success so bots can't enumerate valid addresses
+        echo json_encode(['success' => true]);
         exit;
     }
-    dbQuery('DELETE FROM mod_subscribers WHERE email = ?', [$email]);
+
+    dbQuery(
+        'INSERT IGNORE INTO mod_subscribers (email, subscribed_at) VALUES (:email, NOW())',
+        ['email' => $email]
+    );
     echo json_encode(['success' => true]);
     exit;
 }

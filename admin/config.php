@@ -9,11 +9,11 @@ define('DB_NAME', 'omoo_site');
 define('DB_USER', 'root');
 define('DB_PASS', '');
 
-// ── Google reCAPTCHA v2 secret key (server-side verification).
-//    This is Google's official free test secret — it always passes.
-//    Replace with your real SECRET KEY from https://www.google.com/recaptcha/admin
-//    once you register your production domain.
-define('RECAPTCHA_SECRET', '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe');
+// ── Spam protection ───────────────────────────────────────────────────────────
+//    SPAM_IP_HASH_KEY is used to HMAC-hash IP addresses before storing them.
+//    This means no raw IPs ever hit the database (NDPR-friendly).
+//    Generate a fresh value with: php -r "echo bin2hex(random_bytes(32));"
+define('SPAM_IP_HASH_KEY', 'a3f8c2e1d94b7056af3219084ecbd5f76a018392cf54de2b71093840ebf62c51');
 
 define('ADMIN_BASE_URL', '/admin/');
 
@@ -123,8 +123,10 @@ function runMigrations(): void
     static $ran = false;
     if ($ran) return;
     $ran = true;
-    try {
-        pdo()->exec("CREATE TABLE IF NOT EXISTS mod_submissions (
+
+    $migrations = [
+        // Core submissions table
+        "CREATE TABLE IF NOT EXISTS mod_submissions (
             id           INT AUTO_INCREMENT PRIMARY KEY,
             form_type    VARCHAR(32)  NOT NULL,
             name         VARCHAR(255) NOT NULL,
@@ -134,9 +136,37 @@ function runMigrations(): void
             submitted_at DATETIME     NOT NULL,
             INDEX idx_form_type    (form_type),
             INDEX idx_submitted_at (submitted_at)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-    } catch (Throwable $e) {
-        error_log('[MOD migration] ' . $e->getMessage());
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+
+        // Rate-limit counters (fixed-window per hashed IP + endpoint)
+        "CREATE TABLE IF NOT EXISTS mod_rate_limits (
+            id           INT AUTO_INCREMENT PRIMARY KEY,
+            ip_hash      VARCHAR(64)  NOT NULL,
+            endpoint     VARCHAR(32)  NOT NULL,
+            hits         INT          NOT NULL DEFAULT 1,
+            window_start DATETIME     NOT NULL,
+            UNIQUE KEY uq_ip_endpoint (ip_hash, endpoint),
+            INDEX idx_window_start (window_start)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+
+        // Spam / rejected-submission log
+        "CREATE TABLE IF NOT EXISTS mod_spam_log (
+            id         INT AUTO_INCREMENT PRIMARY KEY,
+            ip_hash    VARCHAR(64)  NOT NULL,
+            endpoint   VARCHAR(32)  NOT NULL,
+            reason     VARCHAR(64)  NOT NULL,
+            created_at DATETIME     NOT NULL,
+            INDEX idx_ip_hash    (ip_hash),
+            INDEX idx_created_at (created_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+    ];
+
+    foreach ($migrations as $sql) {
+        try {
+            pdo()->exec($sql);
+        } catch (Throwable $e) {
+            error_log('[MOD migration] ' . $e->getMessage());
+        }
     }
 }
 

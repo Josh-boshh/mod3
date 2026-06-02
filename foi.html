@@ -33,7 +33,7 @@
             <span class="eyebrow">Submit a request</span>
             <h2>FOI request form.</h2>
             <p>Complete the form below to submit your request. The Ministry will respond within <strong>7 working days</strong> as required by the FOI Act.</p>
-            <form class="form-grid mod-recaptcha-form" data-form-type="foi" data-success-message="Thank you. Your FOI request has been logged. You will receive a reference number by email within 24 hours." onsubmit="return window.modRecaptchaSubmit(this, event);" style="margin-top:24px;">
+            <form class="form-grid" data-form-type="foi" data-success-message="Thank you. Your FOI request has been logged. You will receive a reference number by email within 24 hours." onsubmit="return window.modFormSubmit(this, event);" style="margin-top:24px;">
               <div>
                 <label for="foi-name">Full name</label>
                 <input id="foi-name" name="name" type="text" required />
@@ -60,13 +60,14 @@
                 <div class="field-help">Be as specific as possible — this helps the responsible officer locate the records quickly.</div>
               </div>
               <div class="full">
-                <div class="mod-recaptcha-widget" aria-label="reCAPTCHA widget"></div>
-                <input type="hidden" name="recaptcha_response" class="mod-recaptcha-response" value="" />
-                <div class="captcha-error" role="alert" style="display:none; align-items:center; gap:8px; margin-top:8px; font-size:.83rem; color:var(--red);">
+                <div class="form-error" role="alert" aria-live="assertive" style="display:none; align-items:center; gap:8px; margin-top:8px; font-size:.83rem; color:var(--red);">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                  <span class="captcha-error-message">Please complete the CAPTCHA to continue.</span>
+                  <span class="form-error-message"></span>
                 </div>
               </div>
+              <!-- Honeypot: hidden from users, filled only by bots -->
+              <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;" />
+              <input type="hidden" name="form_loaded_at" class="mod-form-ts" value="" />
               <div class="full">
                 <button class="btn btn-green" type="submit">Submit request</button>
               </div>

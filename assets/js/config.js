@@ -19,19 +19,6 @@ window.MOD_CONFIG = {
   // ── Google Cloud Translation API key ─────────────────────────────────────
   GOOGLE_TRANSLATE_API_KEY: "",
 
-  // ── Google reCAPTCHA v2 ("I'm not a robot" checkbox) — site key.
-  //    ─────────────────────────────────────────────────────────────
-  //    HOW TO GET YOUR FREE KEY FOR PRODUCTION:
-  //    1. Go to https://www.google.com/recaptcha/admin/create
-  //    2. Choose "Challenge (v2)" → "I'm not a robot" Checkbox
-  //    3. Add your domain (e.g. defence.gov.ng) under "Domains"
-  //    4. Copy the SITE KEY here and the SECRET KEY into admin/config.php
-  //
-  //    The key below is Google's official free test key — it always
-  //    passes validation and works on ANY domain (localhost included).
-  //    Replace it with your real key before going live.
-  RECAPTCHA_SITE_KEY: "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI",
-
   // ── Languages offered in the dropdown (label shown to users) ─────────────
   //   Add more by appending {code: "label"} — everything else is generic.
   LANGUAGES: {

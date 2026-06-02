@@ -37,20 +37,21 @@
           </div>
           <div>
             <h2>Make a complaint.</h2>
-            <form class="form-grid mod-recaptcha-form" data-form-type="servicom" data-success-message="Thank you. Your SERVICOM complaint has been received. You will receive a reference number by email within 24 hours." onsubmit="return window.modRecaptchaSubmit(this, event);" style="margin-top:14px;">
+            <form class="form-grid" data-form-type="servicom" data-success-message="Thank you. Your SERVICOM complaint has been received. You will receive a reference number by email within 24 hours." onsubmit="return window.modFormSubmit(this, event);" style="margin-top:14px;">
               <div><label for="s-name">Name</label><input id="s-name" name="name" type="text" required /></div>
               <div><label for="s-email">Email</label><input id="s-email" name="email" type="email" required /></div>
               <div class="full"><label for="s-where">Where the service was received</label><input id="s-where" name="where" type="text" required placeholder="e.g. Procurement Department, Ship House" /></div>
               <div class="full"><label for="s-when">When (date)</label><input id="s-when" name="when" type="date" required /></div>
               <div class="full"><label for="s-details">What happened</label><textarea id="s-details" name="details" required></textarea></div>
               <div class="full">
-                <div class="mod-recaptcha-widget" aria-label="reCAPTCHA widget"></div>
-                <input type="hidden" name="recaptcha_response" class="mod-recaptcha-response" value="" />
-                <div class="captcha-error" role="alert" style="display:none; align-items:center; gap:8px; margin-top:8px; font-size:.83rem; color:var(--red);">
+                <div class="form-error" role="alert" aria-live="assertive" style="display:none; align-items:center; gap:8px; margin-top:8px; font-size:.83rem; color:var(--red);">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                  <span class="captcha-error-message">Please complete the CAPTCHA to continue.</span>
+                  <span class="form-error-message"></span>
                 </div>
               </div>
+              <!-- Honeypot: hidden from users, filled only by bots -->
+              <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;" />
+              <input type="hidden" name="form_loaded_at" class="mod-form-ts" value="" />
               <div class="full"><button class="btn btn-green" type="submit">Submit complaint</button></div>
             </form>
             <p style="margin-top:14px; font-size:.85rem; color:var(--ink-3);">SERVICOM complaints are resolved within <strong>7 working days</strong>. Email <a href="mailto:servicom@defence.gov.ng">servicom@defence.gov.ng</a> to follow up.</p>

@@ -175,11 +175,10 @@
     }
   }
 
-  // Post a subscriber change to the backend. Optionally include a reCAPTCHA token.
-  async function postSubscriber(email, action = 'add', recaptcha_token = null) {
+  // Post a subscriber change to the backend.
+  async function postSubscriber(email, action = 'add', extraFields = {}) {
     try {
-      const body = { action, email };
-      if (recaptcha_token) body.recaptcha_token = recaptcha_token;
+      const body = { action, email, ...extraFields };
       const res = await fetch(apiUrl('subscribe.php'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -275,20 +274,20 @@
       return true;
     },
 
-    // Validate on backend first, then update local list if successful.
-    async syncSubscriber(email, recaptcha_token = null) {
+    // Validate on backend first (with full payload for spam checks), then update local list.
+    async syncSubscriberFull(payload = {}) {
+      const email = String(payload.email || '').trim().toLowerCase();
       if (!email) return null;
-      const normalized = String(email).trim().toLowerCase();
-      const list = loadSubscribers();
-      const exists = list.find((s) => s.email.toLowerCase() === normalized);
+      const list   = loadSubscribers();
+      const exists = list.find((s) => s.email.toLowerCase() === email);
       if (exists) {
         return { error: 'You are already subscribed with that email.' };
       }
       try {
-        const res = await postSubscriber(normalized, 'add', recaptcha_token);
+        const { email: _e, action: _a, ...extra } = payload;
+        const res = await postSubscriber(email, 'add', extra);
         if (res && res.success) {
-          const subscriber = { email: normalized, when: new Date().toISOString() };
-          list.unshift(subscriber);
+          list.unshift({ email, when: new Date().toISOString() });
           setSubscribers(list);
         }
         return res;
