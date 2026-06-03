@@ -475,7 +475,7 @@ body::after  { display: none; }
 }
 .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
 .brand-logo {
-  width: 44px; height: 44px; flex-shrink: 0;
+  width: 56px; height: 56px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
 }
 .brand-logo img, .brand-logo svg { width: 100%; height: 100%; }
@@ -705,7 +705,7 @@ body::after  { display: none; }
 
 /* MOD logo — right end of navbar */
 .nav-mod-logo {
-  width: 44px; height: 44px;
+  width: 56px; height: 56px;
   object-fit: contain;
   flex-shrink: 0;
   opacity: 0.92;
@@ -1160,14 +1160,14 @@ body::after  { display: none; }
 }
 .comp-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-m); border-color: var(--green); }
 .comp-card .logo {
-  width: 84px; height: 84px;
+  width: 104px; height: 104px;
   margin-bottom: 18px;
   display: flex; align-items: center; justify-content: center;
   background: var(--green-soft);
   border-radius: 50%;
   flex-shrink: 0;
 }
-.comp-card .logo img { width: 60%; height: 60%; object-fit: contain; }
+.comp-card .logo img { width: 70%; height: 70%; object-fit: contain; }
 .comp-card h4 { color: var(--ink); margin-bottom: 6px; font-size: 1rem; }
 .comp-card .sub { font-size: .78rem; color: var(--ink-3); letter-spacing: .04em; }
 
@@ -1388,9 +1388,9 @@ textarea { min-height: 140px; resize: vertical; }
 .logo-slide:first-child { border-left: 1px solid rgba(255,255,255,.06); }
 
 .logo-slide img {
-  height: 56px;
+  height: 72px;
   width: auto;
-  max-width: 120px;
+  max-width: 140px;
   object-fit: contain;
   opacity: .65;
   transition: opacity .25s ease;
@@ -1412,7 +1412,7 @@ textarea { min-height: 140px; resize: vertical; }
 @media (max-width: 720px) {
   .logo-slider { margin: 0 -22px; }
   .logo-slide { padding: 20px 32px; }
-  .logo-slide img { height: 44px; }
+  .logo-slide img { height: 56px; }
   .logo-slider::before, .logo-slider::after { width: 60px; }
 }
 
@@ -2554,8 +2554,8 @@ section.ink::after {
   /* Nudge brand right, tighten logo-to-text gap */
   .brand { margin-left: 16px; gap: 8px; }
 
-  /* Logo: much smaller */
-  .brand-logo { width: 22px !important; height: 22px !important; }
+  /* Logo: moderately smaller for mobile */
+  .brand-logo { width: 32px !important; height: 32px !important; }
 
   /* Ministry name: much smaller */
   .brand-text .ministry { font-size: 0.625rem !important; line-height: 1.3; }

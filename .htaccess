@@ -1,124 +1,142 @@
-# =============================================================================
-# Federal Ministry of Defence — Apache HTTP Server configuration
-# =============================================================================
-# Place this file at the web root. Requires Apache 2.4+ with mod_rewrite,
-# mod_headers, and mod_expires enabled.
-# =============================================================================
+  # =============================================================================
+  # Federal Ministry of Defence — Apache HTTP Server configuration
+  # =============================================================================
+  # Place this file at the web root. Requires Apache 2.4+ with mod_rewrite,
+  # mod_headers, and mod_expires enabled.
+  # =============================================================================
 
-# ── Engine on ────────────────────────────────────────────────────────────────
-Options -Indexes -MultiViews
-Options +FollowSymLinks
-RewriteEngine On
+  # ── Engine on ────────────────────────────────────────────────────────────────
+  Options -Indexes -MultiViews
+  Options +FollowSymLinks
+  RewriteEngine On
 
-# ── 1. Force HTTPS (HTTP → HTTPS redirect) ───────────────────────────────────
-# Redirect every plain HTTP request to the HTTPS equivalent.
-# Remove or comment out during local development on http://localhost.
-RewriteCond %{HTTPS} off
-RewriteCond %{HTTP_HOST} !^localhost [NC]
-RewriteCond %{HTTP_HOST} !^127\.0\.0\.1
-RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+  # ── 1. Force HTTPS (HTTP → HTTPS redirect) ───────────────────────────────────
+  # Redirect every plain HTTP request to the HTTPS equivalent.
+  # Remove or comment out during local development on http://localhost.
+  RewriteCond %{HTTPS} off
+  RewriteCond %{HTTP_HOST} !^localhost [NC]
+  RewriteCond %{HTTP_HOST} !^127\.0\.0\.1
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 
-# ── 2. Force www → non-www (canonical domain) ────────────────────────────────
-# Comment out if you prefer www.defence.gov.ng as the canonical.
-RewriteCond %{HTTP_HOST} ^www\.defence\.gov\.ng [NC]
-RewriteRule ^ https://defence.gov.ng%{REQUEST_URI} [R=301,L]
+  # ── 2. Force www → non-www (canonical domain) ────────────────────────────────
+  # Comment out if you prefer www.defence.gov.ng as the canonical.
+  RewriteCond %{HTTP_HOST} ^www\.defence\.gov\.ng [NC]
+  RewriteRule ^ https://defence.gov.ng%{REQUEST_URI} [R=301,L]
 
-# ── 3. Security headers ───────────────────────────────────────────────────────
-<IfModule mod_headers.c>
+  # ── 3. Security headers ───────────────────────────────────────────────────────
+  <IfModule mod_headers.c>
 
-  # HTTP Strict Transport Security — tells browsers to ONLY use HTTPS for
-  # the next 2 years, including all subdomains. Add preload once SSL is
-  # confirmed stable; submit to hstspreload.org after that.
-  Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains" "expr=%{HTTPS}=='on'"
+    # HTTP Strict Transport Security — tells browsers to ONLY use HTTPS for
+    # the next 2 years, including all subdomains. Add preload once SSL is
+    # confirmed stable; submit to hstspreload.org after that.
+    Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains" "expr=%{HTTPS}=='on'"
 
-  # Prevent the site being embedded in iframes on other domains (clickjacking)
-  Header always set X-Frame-Options "SAMEORIGIN"
+    # Prevent the site being embedded in iframes on other domains (clickjacking)
+    Header always set X-Frame-Options "SAMEORIGIN"
 
-  # Block MIME-type sniffing (stops browsers guessing content types)
-  Header always set X-Content-Type-Options "nosniff"
+    # Block MIME-type sniffing (stops browsers guessing content types)
+    Header always set X-Content-Type-Options "nosniff"
 
-  # Control referrer information sent when leaving the site
-  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    # Control referrer information sent when leaving the site
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
 
-  # Disable browser features not needed by this site
-  Header always set Permissions-Policy "geolocation=(), camera=(), microphone=(), payment=(), usb=(), interest-cohort=()"
+    # Disable browser features not needed by this site
+    Header always set Permissions-Policy "geolocation=(), camera=(), microphone=(), payment=(), usb=(), interest-cohort=()"
 
-  # Cross-Origin policies
-  Header always set Cross-Origin-Opener-Policy "same-origin"
-  Header always set Cross-Origin-Resource-Policy "same-site"
+    # Cross-Origin policies
+    Header always set Cross-Origin-Opener-Policy "same-origin"
+    Header always set Cross-Origin-Resource-Policy "same-site"
 
-  # Content Security Policy
-  # Allows: this origin, Google Fonts (CSS + fonts), Google Maps embed,
-  #         Google Translate API, inline styles/scripts used by the site.
-  # Adjust frame-src if you add other embeds.
-  Header always set Content-Security-Policy "\
-default-src 'self'; \
-script-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://translate.googleapis.com https://www.gstatic.com; \
-style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; \
-font-src 'self' https://fonts.gstatic.com; \
-img-src 'self' data: https:; \
-frame-src https://www.google.com https://maps.google.com https://translate.googleapis.com; \
-connect-src 'self' https://translate.googleapis.com; \
-object-src 'none'; \
-base-uri 'self'; \
-form-action 'self'; \
-upgrade-insecure-requests;"
+    # Content Security Policy
+    # Allows: this origin, Google Fonts (CSS + fonts), Google Maps embed,
+    #         Google Translate API, inline styles/scripts used by the site.
+    # Adjust frame-src if you add other embeds.
+    Header always set Content-Security-Policy "\
+  default-src 'self'; \
+  script-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://translate.googleapis.com https://www.gstatic.com; \
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; \
+  font-src 'self' https://fonts.gstatic.com; \
+  img-src 'self' data: https:; \
+  frame-src https://www.google.com https://maps.google.com https://translate.googleapis.com; \
+  connect-src 'self' https://translate.googleapis.com; \
+  object-src 'none'; \
+  base-uri 'self'; \
+  form-action 'self'; \
+  upgrade-insecure-requests;"
 
-  # Remove the server version banner (security through obscurity)
-  Header always unset X-Powered-By
-  Header always unset Server
+    # Remove the server version banner (security through obscurity)
+    Header always unset X-Powered-By
+    Header always unset Server
 
-</IfModule>
+  </IfModule>
 
-# ── 4. Custom error pages ─────────────────────────────────────────────────────
-ErrorDocument 404 /404.html
-ErrorDocument 403 /404.html
-ErrorDocument 500 /404.html
+  # ── 4. Custom error pages ─────────────────────────────────────────────────────
+  ErrorDocument 404 /404.html
+  ErrorDocument 403 /404.html
+  ErrorDocument 500 /404.html
 
-# ── 5. Cache-control for static assets ───────────────────────────────────────
-<IfModule mod_expires.c>
-  ExpiresActive On
-  ExpiresByType text/html                  "access plus 0 seconds"
-  ExpiresByType text/css                   "access plus 1 year"
-  ExpiresByType application/javascript     "access plus 1 year"
-  ExpiresByType image/jpeg                 "access plus 1 year"
-  ExpiresByType image/png                  "access plus 1 year"
-  ExpiresByType image/webp                 "access plus 1 year"
-  ExpiresByType image/svg+xml              "access plus 1 year"
-  ExpiresByType image/x-icon              "access plus 1 year"
-  ExpiresByType application/json           "access plus 0 seconds"
-</IfModule>
+  # ── 4.1 Protect sensitive files and serve custom 404 for missing resources ──
+  <IfModule mod_rewrite.c>
+    # Block sensitive files — return 404 which will be handled by ErrorDocument
+    RewriteCond %{REQUEST_URI} ^(?:\.htaccess|config\.php|schema\.sql|setup\.php|\.env|/\.git)
+    RewriteRule ^ - [F,L]
 
-<IfModule mod_headers.c>
-  # Versioned assets (style.css?v=19) get long cache
-  <FilesMatch "\.(css|js|jpg|jpeg|png|webp|svg|ico)$">
-    Header set Cache-Control "public, max-age=31536000, immutable"
+    # Block direct directory access to the assets root
+    RewriteCond %{REQUEST_URI} ^/assets/?$
+    RewriteRule ^ - [F,L]
+
+    # If the requested path does not map to a real file or directory,
+    # trigger a 404 error which Apache will serve with custom 404.html
+    RewriteCond %{REQUEST_URI} !^/404\.html$ 
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ - [F,L]
+  </IfModule>
+
+  # ── 5. Cache-control for static assets ───────────────────────────────────────
+  <IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/html                  "access plus 0 seconds"
+    ExpiresByType text/css                   "access plus 1 year"
+    ExpiresByType application/javascript     "access plus 1 year"
+    ExpiresByType image/jpeg                 "access plus 1 year"
+    ExpiresByType image/png                  "access plus 1 year"
+    ExpiresByType image/webp                 "access plus 1 year"
+    ExpiresByType image/svg+xml              "access plus 1 year"
+    ExpiresByType image/x-icon              "access plus 1 year"
+    ExpiresByType application/json           "access plus 0 seconds"
+  </IfModule>
+
+  <IfModule mod_headers.c>
+    # Versioned assets (style.css?v=19) get long cache
+    <FilesMatch "\.(css|js|jpg|jpeg|png|webp|svg|ico)$">
+      Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+    # HTML is always re-validated
+    <FilesMatch "\.html$">
+      Header set Cache-Control "no-cache, must-revalidate"
+    </FilesMatch>
+    # PHP responses are never cached
+    <FilesMatch "\.php$">
+      Header set Cache-Control "no-store, no-cache, must-revalidate, private"
+    </FilesMatch>
+  </IfModule>
+
+  # ── 6. Compression ────────────────────────────────────────────────────────────
+  <IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css application/javascript
+    AddOutputFilterByType DEFLATE text/xml application/json image/svg+xml
+  </IfModule>
+
+  # ── 7. Protect sensitive files ────────────────────────────────────────────────
+  # Block direct access to config, SQL schema, and dot-files
+  <FilesMatch "(^\.htaccess|config\.php|schema\.sql|setup\.php|\.env)$">
+    Require all denied
   </FilesMatch>
-  # HTML is always re-validated
-  <FilesMatch "\.html$">
-    Header set Cache-Control "no-cache, must-revalidate"
-  </FilesMatch>
-  # PHP responses are never cached
-  <FilesMatch "\.php$">
-    Header set Cache-Control "no-store, no-cache, must-revalidate, private"
-  </FilesMatch>
-</IfModule>
 
-# ── 6. Compression ────────────────────────────────────────────────────────────
-<IfModule mod_deflate.c>
-  AddOutputFilterByType DEFLATE text/html text/css application/javascript
-  AddOutputFilterByType DEFLATE text/xml application/json image/svg+xml
-</IfModule>
-
-# ── 7. Protect sensitive files ────────────────────────────────────────────────
-# Block direct access to config, SQL schema, and dot-files
-<FilesMatch "(^\.htaccess|config\.php|schema\.sql|setup\.php|\.env)$">
-  Require all denied
-</FilesMatch>
-
-# Block access to the admin directory from outside (restrict by IP in production)
-# Uncomment and set your office IP range:
-# <Directory "/admin">
-#   Require ip 102.89.0.0/16
-#   Require ip 41.58.0.0/16
-# </Directory>
+  # Block access to the admin directory from outside (restrict by IP in production)
+  # Uncomment and set your office IP range:
+  # <Directory "/admin">
+  #   Require ip 102.89.0.0/16
+  #   Require ip 41.58.0.0/16
+  # </Directory>

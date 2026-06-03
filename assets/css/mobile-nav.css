@@ -64,7 +64,7 @@
 
   /* ── Logo slider: slimmer on mobile ────────────────────────────────────────── */
   .logo-slide { padding: 12px 20px !important; }
-  .logo-slide img { height: 30px !important; }
+  .logo-slide img { height: 44px !important; }
   .logo-slide span { font-size: .58rem; }
 
   /* ── Footer: hide the two link columns, keep brand + useful links/newsletter ── */

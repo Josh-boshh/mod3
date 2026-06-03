@@ -362,6 +362,9 @@ $csrf = csrfToken();
 <body class="admin-body">
 <div class="admin-shell" id="admin-shell">
 
+  <!-- ═══════════════════════ SIDEBAR BACKDROP ═══════════════════════ -->
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
   <!-- ═══════════════════════ SIDEBAR ═══════════════════════ -->
   <aside class="admin-sidebar">
     <div class="admin-brand">
@@ -1351,16 +1354,29 @@ $csrf = csrfToken();
   /* ── Sidebar toggle ── */
   const toggleBtn  = document.querySelector('.sidebar-toggle');
   const adminShell = document.getElementById('admin-shell');
+  const backdrop   = document.getElementById('sidebar-backdrop');
 
   function setSidebarOpen(open) {
     adminShell.classList.toggle('sidebar-open', open);
     if (toggleBtn) toggleBtn.setAttribute('aria-expanded', String(open));
+    // Prevent body scroll when sidebar is open on mobile
+    if (open && window.innerWidth <= 1100) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
   }
 
   if (toggleBtn) {
     toggleBtn.addEventListener('click', () => setSidebarOpen(!adminShell.classList.contains('sidebar-open')));
   }
 
+  // Close sidebar when clicking outside (on backdrop)
+  if (backdrop) {
+    backdrop.addEventListener('click', () => setSidebarOpen(false));
+  }
+
+  // Close sidebar when clicking a nav button
   navButtons.forEach(btn => {
     btn.addEventListener('click', e => {
       e.preventDefault();
@@ -1369,6 +1385,13 @@ $csrf = csrfToken();
       activateSection(id);
       if (window.innerWidth <= 1100) setSidebarOpen(false);
     });
+  });
+
+  // Close sidebar on window resize if needed
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 1100) {
+      setSidebarOpen(false);
+    }
   });
 
   /* ── Modal ── */
