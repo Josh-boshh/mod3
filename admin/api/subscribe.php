@@ -63,6 +63,11 @@ if (spamRateLimited('subscribe', SPAM_SUB_LIMIT, SPAM_SUB_WINDOW)) {
     exit;
 }
 
+// ── Visible captcha ──────────────────────────────────────────────────────────
+if (!spamVerifyCaptcha($body)) {
+    spamReject('subscribe', 'captcha_fail', 'Security check failed. Please answer the maths question and try again.');
+}
+
 // ── Layer 5: Input validation ─────────────────────────────────────────────────
 $email = spamSanitizeEmail($body['email'] ?? '');
 if (!$email) {

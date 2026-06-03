@@ -198,6 +198,39 @@ function spamLog(string $endpoint, string $reason): void
     }
 }
 
+// ── Slider puzzle captcha verification ───────────────────────────────────────
+// Token produced by JS:  base64(targetX:ts) + ":" + droppedX
+// e.g. "ODU6MTcwMDAwMA==:86"  — target was 85px, user dropped at 86px (within tolerance).
+// Server checks: |droppedX - targetX| <= tolerance AND token is fresh.
+
+const SLIDER_TOLERANCE = 14; // px — must match JS SLD_TOL
+
+function spamVerifyCaptcha(array $body): bool
+{
+    $composite = trim($body['captcha_response'] ?? '');
+    if (!$composite) return false;
+
+    $sep = strrpos($composite, ':');
+    if ($sep === false) return false;
+
+    $token   = substr($composite, 0, $sep);
+    $dropped = substr($composite, $sep + 1);
+
+    $decoded = base64_decode($token, true);
+    if (!$decoded) return false;
+
+    $parts = explode(':', $decoded);
+    if (count($parts) !== 2) return false;
+
+    [$targetX, $ts] = $parts;
+
+    // Reject tokens older than 10 minutes
+    if (abs(time() - (int)$ts) > 600) return false;
+
+    // Verify the drop is within tolerance of the target
+    return abs((int)$dropped - (int)$targetX) <= SLIDER_TOLERANCE;
+}
+
 // ── Unified reject helper ─────────────────────────────────────────────────────
 
 /**

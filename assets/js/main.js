@@ -252,8 +252,7 @@
     return proto + host + dir + 'admin/api/';
   }());
 
-  // Stamp all load-time fields on DOMContentLoaded so the server can
-  // calculate how long the user took before submitting
+  // Stamp all load-time fields so the server can verify submission timing
   function stampLoadTimes() {
     var ts = Date.now().toString();
     document.querySelectorAll('.mod-form-ts').forEach(function (el) {
@@ -261,10 +260,273 @@
     });
   }
 
+  // ── Slider puzzle captcha ────────────────────────────────────────────────────
+
+  var SLD_W  = 300, SLD_H  = 150;   // background canvas size
+  var PIE_W  = 44,  PIE_H  = 44;    // puzzle piece body size
+  var BUMP_R = 9;                    // tab bump radius (piece total width = PIE_W + BUMP_R*2)
+  var SLD_TOL = 13;                  // px tolerance for a successful drop
+
+  function initVisibleCaptchas() {
+    document.querySelectorAll('.mod-captcha-widget').forEach(function (container) {
+      if (!container.dataset.ready) buildCaptcha(container);
+    });
+  }
+
+  function buildCaptcha(container) {
+    var form = container.closest('form');
+    if (!form) return;
+    var responseInput = form.querySelector('.mod-captcha-response');
+    if (!responseInput) return;
+
+    // Random target X — keep hole well away from both edges
+    var minX = PIE_W + BUMP_R * 2 + 30;
+    var maxX = SLD_W - PIE_W - BUMP_R * 2 - 20;
+    var targetX = minX + Math.floor(Math.random() * (maxX - minX));
+    var pieceY  = Math.floor((SLD_H - PIE_H) / 2);
+    var ts      = Math.floor(Date.now() / 1000);
+    var token   = btoa(targetX + ':' + ts);
+    responseInput.value = '';
+
+    // ── DOM ────────────────────────────────────────────────────────────────
+    var wrap = document.createElement('div');
+    wrap.className = 'sld-captcha';
+
+    var prompt = document.createElement('p');
+    prompt.className   = 'sld-prompt';
+    prompt.textContent = 'Drag the piece into the gap to verify';
+
+    var stage = document.createElement('div');
+    stage.className = 'sld-stage';
+
+    var bgCanvas = document.createElement('canvas');
+    bgCanvas.width  = SLD_W;
+    bgCanvas.height = SLD_H;
+    bgCanvas.className = 'sld-bg';
+    bgCanvas.setAttribute('aria-hidden', 'true');
+
+    var pieceCanvas = document.createElement('canvas');
+    pieceCanvas.width  = PIE_W + BUMP_R * 2;
+    pieceCanvas.height = PIE_H;
+    pieceCanvas.className = 'sld-piece';
+    pieceCanvas.style.top  = pieceY + 'px';
+    pieceCanvas.style.left = '0px';
+    pieceCanvas.setAttribute('tabindex', '0');
+    pieceCanvas.setAttribute('role', 'slider');
+    pieceCanvas.setAttribute('aria-label', 'Drag left or right to fill the gap');
+    pieceCanvas.setAttribute('aria-valuemin', '0');
+    pieceCanvas.setAttribute('aria-valuemax', String(SLD_W - PIE_W - BUMP_R * 2));
+    pieceCanvas.setAttribute('aria-valuenow', '0');
+
+    var badge = document.createElement('div');
+    badge.className = 'sld-badge';
+    badge.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Verified';
+
+    var hint = document.createElement('p');
+    hint.className   = 'sld-hint';
+    hint.textContent = '← drag to fill the gap';
+
+    stage.appendChild(bgCanvas);
+    stage.appendChild(pieceCanvas);
+    stage.appendChild(badge);
+    wrap.appendChild(prompt);
+    wrap.appendChild(stage);
+    wrap.appendChild(hint);
+    container.innerHTML = '';
+    container.appendChild(wrap);
+    container.dataset.ready = '1';
+
+    // ── Draw background ────────────────────────────────────────────────────
+    var bgCtx = bgCanvas.getContext('2d');
+    sldDrawBackground(bgCtx, SLD_W, SLD_H);
+
+    // Extract background pixels for the piece BEFORE cutting the hole
+    var pCtx = pieceCanvas.getContext('2d');
+    pCtx.save();
+    sldTracePiece(pCtx, 0, 0, PIE_W, PIE_H, BUMP_R);
+    pCtx.clip();
+    pCtx.drawImage(bgCanvas, -targetX, -pieceY);
+    pCtx.strokeStyle = 'rgba(255,255,255,0.55)';
+    pCtx.lineWidth   = 1.5;
+    sldTracePiece(pCtx, 0, 0, PIE_W, PIE_H, BUMP_R);
+    pCtx.stroke();
+    pCtx.restore();
+
+    // Cut hole in background
+    bgCtx.save();
+    sldTracePiece(bgCtx, targetX, pieceY, PIE_W, PIE_H, BUMP_R);
+    bgCtx.clip();
+    bgCtx.fillStyle = 'rgba(0,0,0,0.42)';
+    bgCtx.fillRect(targetX, pieceY, PIE_W + BUMP_R * 2, PIE_H);
+    bgCtx.restore();
+    // Hole outline
+    bgCtx.save();
+    sldTracePiece(bgCtx, targetX, pieceY, PIE_W, PIE_H, BUMP_R);
+    bgCtx.strokeStyle = 'rgba(255,255,255,0.45)';
+    bgCtx.lineWidth   = 1.5;
+    bgCtx.stroke();
+    bgCtx.restore();
+
+    // ── Drag logic ─────────────────────────────────────────────────────────
+    var solved     = false;
+    var dragging   = false;
+    var startMX    = 0;
+    var startPX    = 0;
+    var currentX   = 0;
+    var maxPX      = SLD_W - PIE_W - BUMP_R * 2;
+
+    function movePiece(x) {
+      currentX = Math.max(0, Math.min(x, maxPX));
+      pieceCanvas.style.left = currentX + 'px';
+      pieceCanvas.setAttribute('aria-valuenow', String(Math.round(currentX)));
+    }
+
+    function onRelease() {
+      if (solved) return;
+      dragging = false;
+      pieceCanvas.style.cursor = 'grab';
+      if (Math.abs(currentX - targetX) <= SLD_TOL) {
+        movePiece(targetX);
+        solved = true;
+        responseInput.value = token + ':' + Math.round(currentX);
+        pieceCanvas.style.cursor   = 'default';
+        badge.classList.add('sld-badge--show');
+        hint.style.display = 'none';
+      } else {
+        // Snap back to start with eased animation
+        var fromX = currentX, frame = 0;
+        (function snap() {
+          frame++;
+          var t = Math.min(frame / 20, 1), ease = 1 - Math.pow(1 - t, 3);
+          movePiece(fromX * (1 - ease));
+          if (t < 1) requestAnimationFrame(snap);
+        }());
+      }
+    }
+
+    // Mouse
+    function onMouseMove(e) { if (dragging) movePiece(startPX + (e.clientX - startMX)); }
+    function onMouseUp()    { if (dragging) { document.removeEventListener('mousemove', onMouseMove); document.removeEventListener('mouseup', onMouseUp); onRelease(); } }
+
+    pieceCanvas.addEventListener('mousedown', function (e) {
+      if (solved) return;
+      dragging = true;
+      startMX  = e.clientX;
+      startPX  = currentX;
+      pieceCanvas.style.cursor = 'grabbing';
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+      e.preventDefault();
+    });
+
+    // Touch
+    function onTouchMove(e) { if (dragging) { movePiece(startPX + (e.touches[0].clientX - startMX)); e.preventDefault(); } }
+    function onTouchEnd()   { if (dragging) { document.removeEventListener('touchmove', onTouchMove); document.removeEventListener('touchend', onTouchEnd); onRelease(); } }
+
+    pieceCanvas.addEventListener('touchstart', function (e) {
+      if (solved) return;
+      dragging = true;
+      startMX  = e.touches[0].clientX;
+      startPX  = currentX;
+      document.addEventListener('touchmove', onTouchMove, { passive: false });
+      document.addEventListener('touchend',  onTouchEnd);
+      e.preventDefault();
+    }, { passive: false });
+
+    // Keyboard
+    pieceCanvas.addEventListener('keydown', function (e) {
+      if (solved) return;
+      var step = e.shiftKey ? 12 : 3;
+      if      (e.key === 'ArrowRight' || e.key === 'ArrowUp')   { movePiece(currentX + step); e.preventDefault(); }
+      else if (e.key === 'ArrowLeft'  || e.key === 'ArrowDown')  { movePiece(currentX - step); e.preventDefault(); }
+      else if (e.key === 'Enter'      || e.key === ' ')          { onRelease();                e.preventDefault(); }
+    });
+  }
+
+  // Rectangle body + circular tab bump on the right
+  function sldTracePiece(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + w, y);
+    ctx.lineTo(x + w, y + (h / 2 - r));
+    ctx.arc(x + w + r, y + h / 2, r, Math.PI, 0, false);
+    ctx.lineTo(x + w, y + h);
+    ctx.lineTo(x, y + h);
+    ctx.closePath();
+  }
+
+  // Procedural landscape background — rich enough for alignment to be obvious
+  function sldDrawBackground(ctx, W, H) {
+    // Sky
+    var sky = ctx.createLinearGradient(0, 0, 0, H * 0.65);
+    sky.addColorStop(0, '#0d2137');
+    sky.addColorStop(1, '#1a6b8a');
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, W, H * 0.65);
+
+    // Ground
+    var gnd = ctx.createLinearGradient(0, H * 0.62, 0, H);
+    gnd.addColorStop(0, '#2d6a4f');
+    gnd.addColorStop(1, '#1b4332');
+    ctx.fillStyle = gnd;
+    ctx.fillRect(0, H * 0.62, W, H * 0.38);
+
+    // Sun glow
+    var sun = ctx.createRadialGradient(W * 0.76, H * 0.18, 0, W * 0.76, H * 0.18, 32);
+    sun.addColorStop(0,   'rgba(255,215,70,0.95)');
+    sun.addColorStop(0.4, 'rgba(255,165,0,0.45)');
+    sun.addColorStop(1,   'rgba(255,100,0,0)');
+    ctx.fillStyle = sun;
+    ctx.beginPath();
+    ctx.arc(W * 0.76, H * 0.18, 32, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Clouds
+    [[0.12,0.12,32,12],[0.42,0.08,28,11],[0.62,0.2,24,10]].forEach(function(c) {
+      ctx.fillStyle = 'rgba(255,255,255,0.16)';
+      ctx.beginPath(); ctx.ellipse(c[0]*W,        c[1]*H,      c[2], c[3], 0, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(c[0]*W+c[2]*0.6, c[1]*H-c[3]*0.5, c[2]*0.7, c[3]*0.8, 0, 0, Math.PI*2); ctx.fill();
+    });
+
+    // Rolling hills
+    ctx.fillStyle = '#3a8c5c';
+    ctx.beginPath();
+    ctx.moveTo(0, H * 0.72);
+    ctx.bezierCurveTo(W*0.12, H*0.48, W*0.28, H*0.58, W*0.42, H*0.67);
+    ctx.bezierCurveTo(W*0.52, H*0.74, W*0.65, H*0.5,  W*0.82, H*0.62);
+    ctx.lineTo(W, H*0.66); ctx.lineTo(W, H); ctx.lineTo(0, H);
+    ctx.closePath(); ctx.fill();
+
+    // Stars
+    [[0.07,0.07],[0.2,0.17],[0.36,0.05],[0.5,0.13],[0.87,0.11],[0.94,0.28],[0.3,0.25]].forEach(function(s) {
+      ctx.fillStyle = 'rgba(255,255,255,0.75)';
+      ctx.beginPath(); ctx.arc(s[0]*W, s[1]*H, 1.4, 0, Math.PI*2); ctx.fill();
+    });
+
+    // Tree silhouettes
+    function tree(tx, ty, sz) {
+      ctx.fillStyle = '#1b4332';
+      [[0,0,1,1.8],[0.8,0.7,0.7,2.5]].forEach(function(t) {
+        ctx.beginPath();
+        ctx.moveTo(tx+t[0],         ty+t[1]);
+        ctx.lineTo(tx - sz*(1-t[0]), ty + sz*t[2]*1.8);
+        ctx.lineTo(tx + sz*(1-t[0]), ty + sz*t[2]*1.8);
+        ctx.closePath(); ctx.fill();
+      });
+    }
+    tree(W*0.08,  H*0.52, 10);
+    tree(W*0.88,  H*0.48, 13);
+    tree(W*0.33,  H*0.58, 8);
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', stampLoadTimes);
+    document.addEventListener('DOMContentLoaded', function () {
+      stampLoadTimes();
+      initVisibleCaptchas();
+    });
   } else {
     stampLoadTimes();
+    initVisibleCaptchas();
   }
 
   // ── Newsletter form ─────────────────────────────────────────────────────────
@@ -292,9 +554,20 @@
       return false;
     }
 
+    var captchaInput = form.querySelector('.mod-captcha-response');
+    if (captchaInput && !captchaInput.value.trim()) {
+      showMessage('Please answer the security question.', false);
+      return false;
+    }
+
     function finishAndReset() {
       form.reset();
       if (tsEl) tsEl.value = Date.now().toString();
+      var captchaContainer = form.querySelector('.mod-captcha-widget');
+      if (captchaContainer) {
+        captchaContainer.dataset.ready = '';
+        buildCaptcha(captchaContainer);
+      }
     }
 
     // Collect the full payload (includes honeypot + form_loaded_at for server checks)
@@ -368,8 +641,15 @@
 
     hideError();
 
+    // Captcha check
+    var captchaInput = form.querySelector('.mod-captcha-response');
+    if (captchaInput && !captchaInput.value.trim()) {
+      showError('Please answer the security question to continue.');
+      return false;
+    }
+
     // Collect all named form fields into the payload
-    // (includes website honeypot and form_loaded_at — the server validates both)
+    // (includes honeypot, form_loaded_at, and captcha_response — server validates all)
     var payload  = {};
     var elements = form.elements;
     for (var i = 0; i < elements.length; i++) {

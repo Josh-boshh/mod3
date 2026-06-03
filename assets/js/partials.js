@@ -220,8 +220,8 @@
           <form class="newsletter-wrap mod-newsletter-form" onsubmit="return window.modNewsletterSubmit(this, event);">
             <input type="email" placeholder="your.email@example.com" required aria-label="Email address" />
             <button type="submit" data-i18n>Subscribe</button>
-            <div class="mod-recaptcha-widget" aria-label="reCAPTCHA widget"></div>
-            <input type="hidden" name="recaptcha_response" class="mod-recaptcha-response" value="" />
+            <div class="mod-captcha-widget"></div>
+            <input type="hidden" name="captcha_response" class="mod-captcha-response" value="" />
             <div class="newsletter-form-feedback" aria-live="polite"></div>
             <!-- Honeypot: invisible to real users, filled by bots -->
             <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true"

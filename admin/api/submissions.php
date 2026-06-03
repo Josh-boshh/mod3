@@ -76,6 +76,11 @@ if (spamRateLimited('submissions', SPAM_SUBMIT_LIMIT, SPAM_SUBMIT_WINDOW)) {
     exit;
 }
 
+// ── Visible captcha ──────────────────────────────────────────────────────────
+if (!spamVerifyCaptcha($body)) {
+    spamReject('submissions', 'captcha_fail', 'Security check failed. Please answer the maths question and try again.');
+}
+
 // ── Layer 5: Input validation & sanitisation ─────────────────────────────────
 $allowedTypes = ['contact', 'foi', 'servicom'];
 $formType     = spamSanitizeText($body['form_type'] ?? '', 32);
@@ -148,7 +153,7 @@ if (spamDuplicate($formType, $email, $subject)) {
 }
 
 // ── Persist (strip reserved / spam fields from meta) ─────────────────────────
-$reserved = ['form_type', 'name', 'email', 'website', 'form_loaded_at'];
+$reserved = ['form_type', 'name', 'email', 'website', 'form_loaded_at', 'captcha_response'];
 $meta     = [];
 foreach ($body as $k => $v) {
     if (!in_array($k, $reserved, true) && is_string($v)) {

@@ -1478,13 +1478,88 @@ textarea { min-height: 140px; resize: vertical; }
 }
 .newsletter-wrap button:hover { background: var(--gold); color: #fff; }
 
-.mod-recaptcha-widget {
-  flex-basis: 100%;
-  margin-top: 12px;
+.mod-recaptcha-widget { flex-basis: 100%; margin-top: 12px; }
+.mod-recaptcha-response { display: none; }
+
+/* ── Slider puzzle captcha ────────────────────────────────────────────────── */
+.mod-captcha-widget  { flex-basis: 100%; margin-top: 4px; }
+.mod-captcha-response { display: none; }
+
+.sld-captcha { display: flex; flex-direction: column; gap: 6px; }
+
+.sld-prompt {
+  font-size: .8rem;
+  color: var(--ink-2);
+  margin: 0;
+  font-weight: 500;
 }
-.mod-recaptcha-response {
+
+.sld-stage {
+  position: relative;
+  width: 300px;
+  max-width: 100%;
+  height: 150px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.sld-bg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.sld-piece {
+  position: absolute;
+  cursor: grab;
+  touch-action: none;
+  filter: drop-shadow(1px 2px 5px rgba(0,0,0,0.55));
+  transition: filter .15s;
+}
+.sld-piece:focus {
+  outline: 2px solid var(--gold, #c9a84c);
+  outline-offset: 2px;
+}
+
+/* Full-stage overlay shown on success */
+.sld-badge {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: rgba(0,135,81,0.78);
+  color: #fff;
+  font-weight: 700;
+  font-size: .92rem;
+  border-radius: 8px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s ease;
+}
+.sld-badge--show { opacity: 1; }
+
+.sld-hint {
+  font-size: .76rem;
+  color: var(--ink-3);
+  margin: 0;
+  text-align: center;
+}
+
+/* Generic inline form error (replaces .captcha-error on updated forms) */
+.form-error {
   display: none;
+  align-items: center;
+  gap: 7px;
+  font-size: .83rem;
+  color: var(--red, #c0392b);
+  margin-top: 4px;
 }
+.form-error svg { flex-shrink: 0; }
 
 .newsletter-form-feedback {
   flex-basis: 100%;
