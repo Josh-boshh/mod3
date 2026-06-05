@@ -86,7 +86,7 @@ if ($action === 'add') {
     }
 
     dbQuery(
-        'INSERT INTO mod_subscribers (email, subscribed_at) VALUES (:email, NOW()) ON CONFLICT DO NOTHING',
+        'INSERT IGNORE INTO mod_subscribers (email, subscribed_at) VALUES (:email, NOW())',
         ['email' => $email]
     );
     echo json_encode(['success' => true]);

@@ -2,49 +2,35 @@
 session_start();
 require_once __DIR__ . '/default-data.php';
 
-// ── Database (PostgreSQL) ─────────────────────────────────────────────────────
-// On Render: DATABASE_URL is injected automatically from the linked database.
-// Locally: set DB_HOST / DB_PORT / DB_NAME / DB_USER / DB_PASS env vars,
-//          or install PostgreSQL and use the defaults below.
-define('SPAM_IP_HASH_KEY', getenv('SPAM_IP_HASH_KEY') ?: 'a3f8c2e1d94b7056af3219084ecbd5f76a018392cf54de2b71093840ebf62c51');
-define('ADMIN_BASE_URL', '/admin/');
+// Database connection settings.
+// Update these values to match your MySQL server.
+define('DB_HOST', '127.0.0.1');
+define('DB_NAME', 'omoo_site');
+define('DB_USER', 'root');
+define('DB_PASS', '');
 
-function modDbConfig(): array
-{
-    static $cfg;
-    if ($cfg) return $cfg;
-    $url = getenv('DATABASE_URL') ?: null;
-    if ($url) {
-        $p   = parse_url($url);
-        $cfg = [
-            'dsn'  => sprintf('pgsql:host=%s;port=%s;dbname=%s;sslmode=require',
-                              $p['host'], $p['port'] ?? 5432, ltrim($p['path'] ?? '/', '/')),
-            'user' => rawurldecode($p['user'] ?? ''),
-            'pass' => rawurldecode($p['pass'] ?? ''),
-        ];
-    } else {
-        $cfg = [
-            'dsn'  => sprintf('pgsql:host=%s;port=%s;dbname=%s;sslmode=prefer',
-                              getenv('DB_HOST') ?: '127.0.0.1',
-                              getenv('DB_PORT') ?: '5432',
-                              getenv('DB_NAME') ?: 'mod3'),
-            'user' => getenv('DB_USER') ?: 'postgres',
-            'pass' => getenv('DB_PASS') ?: '',
-        ];
-    }
-    return $cfg;
-}
+// ── Spam protection ───────────────────────────────────────────────────────────
+//    SPAM_IP_HASH_KEY is used to HMAC-hash IP addresses before storing them.
+//    This means no raw IPs ever hit the database (NDPR-friendly).
+//    Generate a fresh value with: php -r "echo bin2hex(random_bytes(32));"
+define('SPAM_IP_HASH_KEY', 'a3f8c2e1d94b7056af3219084ecbd5f76a018392cf54de2b71093840ebf62c51');
+
+define('ADMIN_BASE_URL', '/admin/');
 
 function pdo()
 {
     static $pdo;
-    if ($pdo) return $pdo;
-    ['dsn' => $dsn, 'user' => $user, 'pass' => $pass] = modDbConfig();
-    $pdo = new PDO($dsn, $user, $pass, [
-        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+    if ($pdo) {
+        return $pdo;
+    }
+
+    $dsn = sprintf('mysql:host=%s;dbname=%s;charset=utf8mb4', DB_HOST, DB_NAME);
+    $pdo = new PDO($dsn, DB_USER, DB_PASS, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES   => false,
+        PDO::ATTR_EMULATE_PREPARES => false,
     ]);
+
     return $pdo;
 }
 
@@ -141,42 +127,52 @@ function runMigrations(): void
     $migrations = [
         // Core submissions table
         "CREATE TABLE IF NOT EXISTS mod_submissions (
-            id           SERIAL       PRIMARY KEY,
+            id           INT AUTO_INCREMENT PRIMARY KEY,
             form_type    VARCHAR(32)  NOT NULL,
             name         VARCHAR(255) NOT NULL,
             email        VARCHAR(191) NOT NULL,
             subject      VARCHAR(255) NOT NULL DEFAULT '',
-            meta         JSONB,
-            submitted_at TIMESTAMP    NOT NULL DEFAULT NOW()
-        )",
-        "CREATE INDEX IF NOT EXISTS idx_sub_form_type    ON mod_submissions (form_type)",
-        "CREATE INDEX IF NOT EXISTS idx_sub_submitted_at ON mod_submissions (submitted_at)",
+            meta         JSON,
+            submitted_at DATETIME     NOT NULL,
+            INDEX idx_form_type    (form_type),
+            INDEX idx_submitted_at (submitted_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
 
         // Rate-limit counters (fixed-window per hashed IP + endpoint)
         "CREATE TABLE IF NOT EXISTS mod_rate_limits (
-            id           SERIAL      PRIMARY KEY,
-            ip_hash      VARCHAR(64) NOT NULL,
-            endpoint     VARCHAR(32) NOT NULL,
-            hits         INT         NOT NULL DEFAULT 1,
-            window_start TIMESTAMP   NOT NULL DEFAULT NOW(),
-            UNIQUE (ip_hash, endpoint)
-        )",
-        "CREATE INDEX IF NOT EXISTS idx_rate_window ON mod_rate_limits (window_start)",
+            id           INT AUTO_INCREMENT PRIMARY KEY,
+            ip_hash      VARCHAR(64)  NOT NULL,
+            endpoint     VARCHAR(32)  NOT NULL,
+            hits         INT          NOT NULL DEFAULT 1,
+            window_start DATETIME     NOT NULL,
+            UNIQUE KEY uq_ip_endpoint (ip_hash, endpoint),
+            INDEX idx_window_start (window_start)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
 
         // Spam / rejected-submission log
         "CREATE TABLE IF NOT EXISTS mod_spam_log (
-            id         SERIAL      PRIMARY KEY,
-            ip_hash    VARCHAR(64) NOT NULL,
-            endpoint   VARCHAR(32) NOT NULL,
-            reason     VARCHAR(64) NOT NULL,
-            created_at TIMESTAMP   NOT NULL DEFAULT NOW()
-        )",
-        "CREATE INDEX IF NOT EXISTS idx_spam_ip ON mod_spam_log (ip_hash)",
-        "CREATE INDEX IF NOT EXISTS idx_spam_at ON mod_spam_log (created_at)",
+            id         INT AUTO_INCREMENT PRIMARY KEY,
+            ip_hash    VARCHAR(64)  NOT NULL,
+            endpoint   VARCHAR(32)  NOT NULL,
+            reason     VARCHAR(64)  NOT NULL,
+            created_at DATETIME     NOT NULL,
+            INDEX idx_ip_hash    (ip_hash),
+            INDEX idx_created_at (created_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
 
         // Gallery images table
-        "CREATE TABLE IF NOT EXISTS mod_gallery_images (\n            id          SERIAL       PRIMARY KEY,\n            image_url   VARCHAR(255) NOT NULL,\n            alt_text    VARCHAR(255) NOT NULL DEFAULT \'\',\n            caption     TEXT         NOT NULL DEFAULT \'\',\n            event_date  DATE,\n            category    VARCHAR(127) NOT NULL DEFAULT \'General\',\n            sort_order  INT          NOT NULL DEFAULT 0,\n            active      SMALLINT     NOT NULL DEFAULT 1,\n            created_at  TIMESTAMP    NOT NULL DEFAULT NOW()\n        )",
-        "CREATE INDEX IF NOT EXISTS idx_gallery_sort ON mod_gallery_images (sort_order ASC, id ASC)",
+        "CREATE TABLE IF NOT EXISTS mod_gallery_images (
+            id          INT AUTO_INCREMENT PRIMARY KEY,
+            image_url   VARCHAR(255) NOT NULL,
+            alt_text    VARCHAR(255) NOT NULL DEFAULT '',
+            caption     TEXT         NOT NULL DEFAULT '',
+            event_date  DATE,
+            category    VARCHAR(127) NOT NULL DEFAULT 'General',
+            sort_order  INT          NOT NULL DEFAULT 0,
+            active      TINYINT(1)   NOT NULL DEFAULT 1,
+            created_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_gallery_sort (sort_order ASC, id ASC)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
     ];
 
     foreach ($migrations as $sql) {

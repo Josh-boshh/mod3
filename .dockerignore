@@ -1,8 +1,0 @@
-.git
-.gitignore
-.dockerignore
-nginx.conf
-SSL-SETUP.md
-render.yaml
-*.md
-.claude/
