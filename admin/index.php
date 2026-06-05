@@ -317,6 +317,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirectTo('settings');
             break;
 
+        case 'save_gallery_image':
+            $galleryId  = (int)($_POST['gallery_id'] ?? 0);
+            $imageUrl   = trim($_POST['gallery_image_url'] ?? '');
+            $altText    = trim($_POST['gallery_alt'] ?? '');
+            $caption    = trim($_POST['gallery_caption'] ?? '');
+            $eventDate  = trim($_POST['gallery_event_date'] ?? '') ?: null;
+            $category   = trim($_POST['gallery_category'] ?? 'General') ?: 'General';
+            $sortOrder  = (int)($_POST['gallery_order'] ?? 0);
+            $active     = isset($_POST['gallery_active']) ? 1 : 0;
+            $existing   = '';
+            if ($galleryId) {
+                $existing = dbFetch('SELECT image_url FROM mod_gallery_images WHERE id = ? LIMIT 1', [$galleryId])['image_url'] ?? '';
+            }
+            $uploadedPath = uploadImageFile('gallery_image_file', 'assets/images/gallery', $existing);
+            if ($uploadedPath) {
+                $imageUrl = $uploadedPath;
+            }
+            if (!$imageUrl) {
+                setFlash('error', 'An image is required. Upload a file or enter a valid image URL.');
+                redirectTo('gallery');
+            }
+            if ($galleryId) {
+                dbQuery('UPDATE mod_gallery_images SET image_url=:image_url, alt_text=:alt_text, caption=:caption, event_date=:event_date, category=:category, sort_order=:sort_order, active=:active WHERE id=:id', [
+                    'image_url' => $imageUrl, 'alt_text' => $altText, 'caption' => $caption,
+                    'event_date' => $eventDate, 'category' => $category,
+                    'sort_order' => $sortOrder, 'active' => $active, 'id' => $galleryId,
+                ]);
+                setFlash('success', 'Gallery image updated.');
+            } else {
+                dbQuery('INSERT INTO mod_gallery_images (image_url, alt_text, caption, event_date, category, sort_order, active) VALUES (:image_url,:alt_text,:caption,:event_date,:category,:sort_order,:active)', [
+                    'image_url' => $imageUrl, 'alt_text' => $altText, 'caption' => $caption,
+                    'event_date' => $eventDate, 'category' => $category,
+                    'sort_order' => $sortOrder, 'active' => $active,
+                ]);
+                setFlash('success', 'Gallery image added.');
+            }
+            redirectTo('gallery');
+            break;
+
+        case 'delete_gallery_image':
+            $galleryId = (int)($_POST['gallery_id'] ?? 0);
+            if ($galleryId) {
+                dbQuery('DELETE FROM mod_gallery_images WHERE id = ?', [$galleryId]);
+                setFlash('success', 'Gallery image removed.');
+            }
+            redirectTo('gallery');
+            break;
+
         default:
             setFlash('error', 'Unknown action.');
             redirectTo();
@@ -327,6 +375,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $dbSlides = safeDbFetchAll('SELECT * FROM mod_hero_slides ORDER BY sort_order ASC, id ASC');
 $dbLeaders = safeDbFetchAll('SELECT * FROM mod_leaders ORDER BY sort_order ASC, id ASC');
 $dbPressItems = safeDbFetchAll('SELECT * FROM mod_press_items ORDER BY sort_order ASC, id ASC');
+$galleryImages = getGalleryImages(false);
+
+$editGalleryImage = null;
+if (!empty($_GET['edit_gallery'])) {
+    $editGalleryImage = dbFetch('SELECT * FROM mod_gallery_images WHERE id = ? LIMIT 1', [(int)$_GET['edit_gallery']]);
+}
 
 $slides = $dbSlides ?: getHeroSlides(false);
 $leaders = $dbLeaders ?: getLeadership(false);
@@ -402,6 +456,10 @@ $csrf = csrfToken();
       <a class="admin-nav-btn" href="#leadership">
         <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
         Leadership
+      </a>
+      <a class="admin-nav-btn" href="#gallery">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></span>
+        Gallery
       </a>
 
       <div class="nav-section-label">Audience</div>
@@ -526,6 +584,13 @@ $csrf = csrfToken();
           <div class="stat-num"><?= count($leaders) ?></div>
           <div class="stat-label">Leadership profiles</div>
         </div>
+        <div class="stat-card">
+          <div class="stat-card-icon blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </div>
+          <div class="stat-num"><?= count($galleryImages) ?></div>
+          <div class="stat-label">Gallery images</div>
+        </div>
       </div>
 
       <!-- Grid: quick actions + activity -->
@@ -536,6 +601,7 @@ $csrf = csrfToken();
             <a class="btn btn-green btn-sm" href="#press" data-open-edit-modal="press">+ Press release</a>
             <a class="btn btn-outline btn-sm" href="#slides" data-open-edit-modal="slide">+ Hero slide</a>
             <a class="btn btn-outline btn-sm" href="#leadership" data-open-edit-modal="leadership">+ Leader profile</a>
+            <a class="btn btn-outline btn-sm" href="#gallery" data-open-edit-modal="gallery">+ Gallery image</a>
             <a class="btn btn-ghost btn-sm" href="#subscribers">View subscribers</a>
             <a class="btn btn-ghost btn-sm" href="#submissions">View submissions</a>
             <a class="btn btn-ghost btn-sm" href="#settings">Settings</a>
@@ -1058,6 +1124,148 @@ $csrf = csrfToken();
       </div>
     </section>
 
+
+    <!-- ─────────────── GALLERY ─────────────── -->
+    <section class="admin-section" id="gallery">
+      <div class="admin-header">
+        <div class="admin-header-text">
+          <h1>Gallery.</h1>
+          <p>Manage the public photo gallery. Images are displayed on the <a href="../gallery.html" target="_blank" style="color:var(--green);">Gallery page</a>.</p>
+        </div>
+        <div class="admin-header-actions">
+          <a class="btn btn-green btn-sm" href="#gallery" data-open-edit-modal="gallery">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add image
+          </a>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h3>Gallery images</h3>
+            <p>Upload a file or provide a URL. Lower sort-order numbers appear first.</p>
+          </div>
+        </div>
+
+        <?php
+        $galleryForSection = getGalleryImages(false);
+        if (!$galleryForSection) { $galleryForSection = []; }
+        ?>
+
+        <?php if ($galleryForSection): ?>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Preview</th>
+                  <th>Caption</th>
+                  <th>Category</th>
+                  <th>Date</th>
+                  <th>Order</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php foreach ($galleryForSection as $img): ?>
+                  <tr>
+                    <td><img src="<?= escapeHtml(resolveAdminImageUrl($img['image_url'])) ?>" alt="<?= escapeHtml($img['alt_text']) ?>" /></td>
+                    <td><?= escapeHtml(mb_strimwidth($img['caption'], 0, 60, '…')) ?></td>
+                    <td><?= escapeHtml($img['category']) ?></td>
+                    <td><?= $img['event_date'] ? escapeHtml(date('j M Y', strtotime($img['event_date']))) : '—' ?></td>
+                    <td><?= escapeHtml($img['sort_order']) ?></td>
+                    <td><span class="badge badge-<?= $img['active'] ? 'active' : 'disabled' ?>"><?= $img['active'] ? 'Active' : 'Hidden' ?></span></td>
+                    <td>
+                      <div class="row-actions">
+                        <a class="btn btn-sm btn-outline" href="?edit_gallery=<?= escapeHtml($img['id']) ?>#gallery">Edit</a>
+                        <form method="post" class="inline-form" onsubmit="return confirm('Remove this image from the gallery?');">
+                          <input type="hidden" name="csrf" value="<?= escapeHtml($csrf) ?>" />
+                          <input type="hidden" name="action" value="delete_gallery_image" />
+                          <input type="hidden" name="gallery_id" value="<?= escapeHtml($img['id']) ?>" />
+                          <button type="submit" class="btn btn-sm btn-danger">Remove</button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                <?php endforeach; ?>
+              </tbody>
+            </table>
+          </div>
+        <?php else: ?>
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <p>No gallery images yet.<br><a href="#gallery" data-open-edit-modal="gallery" style="color:var(--green);">Add the first one →</a></p>
+          </div>
+        <?php endif; ?>
+      </div>
+
+      <!-- Edit / add panel (cloned into modal) -->
+      <div class="panel" id="gallery-edit-panel">
+        <h3><?= $editGalleryImage ? 'Edit gallery image' : 'Add gallery image' ?></h3>
+        <form method="post" enctype="multipart/form-data">
+          <input type="hidden" name="csrf" value="<?= escapeHtml($csrf) ?>" />
+          <input type="hidden" name="action" value="save_gallery_image" />
+          <input type="hidden" name="gallery_id" value="<?= escapeHtml($editGalleryImage['id'] ?? '0') ?>" />
+
+          <div class="form-section-title">Image</div>
+          <div class="form-row">
+            <label>
+              Image URL or path
+              <input type="text" name="gallery_image_url" value="<?= escapeHtml($editGalleryImage['image_url'] ?? '') ?>" placeholder="https://... or assets/images/gallery/photo.jpg" />
+              <span class="field-hint">Full URL or path relative to site root</span>
+            </label>
+            <label>
+              Upload image file
+              <input type="file" name="gallery_image_file" accept="image/*" />
+              <span class="field-hint">JPG, PNG, WebP — replaces URL above</span>
+            </label>
+          </div>
+
+          <div class="form-section-title" style="margin-top:4px;">Details</div>
+          <div class="form-row">
+            <label>
+              Alt text <span class="field-hint" style="display:inline;">(for screen readers)</span>
+              <input type="text" name="gallery_alt" value="<?= escapeHtml($editGalleryImage['alt_text'] ?? '') ?>" placeholder="Describe the image" />
+            </label>
+            <label>
+              Category
+              <input type="text" name="gallery_category" value="<?= escapeHtml($editGalleryImage['category'] ?? 'General') ?>" placeholder="e.g. Ministerial, Ceremonies, Security" />
+              <span class="field-hint">Used for filtering on the public gallery</span>
+            </label>
+          </div>
+          <div class="form-row">
+            <label>
+              Caption
+              <textarea name="gallery_caption" rows="2" placeholder="Short caption shown below the image…"><?= escapeHtml($editGalleryImage['caption'] ?? '') ?></textarea>
+            </label>
+            <label>
+              Event date
+              <input type="date" name="gallery_event_date" value="<?= escapeHtml($editGalleryImage['event_date'] ?? '') ?>" />
+              <span class="field-hint">Leave blank if not event-specific</span>
+            </label>
+          </div>
+          <div class="form-row">
+            <label>
+              Sort order
+              <input type="number" name="gallery_order" value="<?= escapeHtml($editGalleryImage['sort_order'] ?? '0') ?>" min="0" />
+              <span class="field-hint">Lower numbers appear first</span>
+            </label>
+          </div>
+
+          <label class="checkbox-label">
+            <input type="checkbox" name="gallery_active" value="1" <?= !isset($editGalleryImage['active']) || $editGalleryImage['active'] ? 'checked' : '' ?> />
+            Show this image on the public gallery
+          </label>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-green"><?= $editGalleryImage ? 'Update image' : 'Save image' ?></button>
+            <?php if ($editGalleryImage): ?><a href="index.php#gallery" class="btn btn-ghost">Cancel</a><?php endif; ?>
+          </div>
+        </form>
+      </div>
+    </section>
+
     <!-- ─────────────── SUBSCRIBERS ─────────────── -->
     <section class="admin-section" id="subscribers">
       <div class="admin-header">
@@ -1308,7 +1516,7 @@ $csrf = csrfToken();
 
   const sectionLabels = {
     dashboard: 'Dashboard', slides: 'Hero & Slider', press: 'Press Releases',
-    leadership: 'Leadership', subscribers: 'Newsletter', submissions: 'Form Submissions',
+    leadership: 'Leadership', gallery: 'Gallery', subscribers: 'Newsletter', submissions: 'Form Submissions',
     settings: 'Site Settings'
   };
 
@@ -1338,6 +1546,7 @@ $csrf = csrfToken();
     if (p.has('edit_slide'))  return 'slides';
     if (p.has('edit_press'))  return 'press';
     if (p.has('edit_leader')) return 'leadership';
+    if (p.has('edit_gallery')) return 'gallery';
     return defaultSec;
   }
 
@@ -1400,6 +1609,7 @@ $csrf = csrfToken();
     if (p.has('edit_slide'))  return 'slide';
     if (p.has('edit_press'))  return 'press';
     if (p.has('edit_leader')) return 'leadership';
+    if (p.has('edit_gallery')) return 'gallery';
     return null;
   }
 

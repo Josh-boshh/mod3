@@ -173,6 +173,10 @@ function runMigrations(): void
         )",
         "CREATE INDEX IF NOT EXISTS idx_spam_ip ON mod_spam_log (ip_hash)",
         "CREATE INDEX IF NOT EXISTS idx_spam_at ON mod_spam_log (created_at)",
+
+        // Gallery images table
+        "CREATE TABLE IF NOT EXISTS mod_gallery_images (\n            id          SERIAL       PRIMARY KEY,\n            image_url   VARCHAR(255) NOT NULL,\n            alt_text    VARCHAR(255) NOT NULL DEFAULT \'\',\n            caption     TEXT         NOT NULL DEFAULT \'\',\n            event_date  DATE,\n            category    VARCHAR(127) NOT NULL DEFAULT \'General\',\n            sort_order  INT          NOT NULL DEFAULT 0,\n            active      SMALLINT     NOT NULL DEFAULT 1,\n            created_at  TIMESTAMP    NOT NULL DEFAULT NOW()\n        )",
+        "CREATE INDEX IF NOT EXISTS idx_gallery_sort ON mod_gallery_images (sort_order ASC, id ASC)",
     ];
 
     foreach ($migrations as $sql) {
@@ -439,4 +443,106 @@ function saveContentBlob(array $blob): void
     }
 
     pdo()->commit();
+}
+
+function getGalleryImages(bool $activeOnly = true): array
+{
+    $sql = 'SELECT * FROM mod_gallery_images' . ($activeOnly ? ' WHERE active = 1' : '') . ' ORDER BY sort_order ASC, id ASC';
+    return safeDbFetchAll($sql);
+}
+
+function defaultGalleryImages(): array
+{
+    return [
+        [
+            'id' => 0,
+            'image_url' => 'https://defence.gov.ng/wp-content/uploads/slider/cache/5c91a2fb5a3c3d7d91aa26fb98ea005d/WhatsApp-Image-2026-05-08-at-09.51.56.jpg',
+            'alt_text' => 'Honourable Minister at the AMCE, Abuja',
+            'caption' => 'Honourable Minister at the AMCE, Abuja — 8 May 2026',
+            'event_date' => '2026-05-08',
+            'category' => 'Ministerial',
+            'sort_order' => 0,
+            'active' => 1,
+        ],
+        [
+            'id' => 0,
+            'image_url' => 'https://defence.gov.ng/wp-content/uploads/slider/cache/7ed124706b9db62fa4aae0e8bdc44f70/WhatsApp-Image-2026-05-06-at-09.44.49.jpg',
+            'alt_text' => 'Regional security meeting',
+            'caption' => 'Regional security meeting — 6 May 2026',
+            'event_date' => '2026-05-06',
+            'category' => 'Security',
+            'sort_order' => 1,
+            'active' => 1,
+        ],
+        [
+            'id' => 0,
+            'image_url' => 'https://defence.gov.ng/wp-content/uploads/slider/cache/f2ac3e9cb69b47524dec83e6268b40b1/WhatsApp-Image-2026-05-05-at-16.06.33.jpg',
+            'alt_text' => 'Veritas University delegation visit to Ship House',
+            'caption' => 'Veritas University delegation, Ship House — 5 May 2026',
+            'event_date' => '2026-05-05',
+            'category' => 'Engagements',
+            'sort_order' => 2,
+            'active' => 1,
+        ],
+        [
+            'id' => 0,
+            'image_url' => 'https://defence.gov.ng/wp-content/uploads/slider/cache/b64dada37ea1a198b4a6e0382f45f0c0/WhatsApp-Image-2026-05-05-at-04.41.488-1.jpg',
+            'alt_text' => 'Engagement on national security',
+            'caption' => 'Engagement on national security — 5 May 2026',
+            'event_date' => '2026-05-05',
+            'category' => 'Security',
+            'sort_order' => 3,
+            'active' => 1,
+        ],
+        [
+            'id' => 0,
+            'image_url' => 'https://defence.gov.ng/wp-content/uploads/slider/cache/7d5dab6eb3370ef45d22dfbeceb170b0/WhatsApp-Image-2026-05-05-at-04.41.4644.jpg',
+            'alt_text' => 'Address to Nigerian students',
+            'caption' => 'Address to Nigerian students — 5 May 2026',
+            'event_date' => '2026-05-05',
+            'category' => 'Engagements',
+            'sort_order' => 4,
+            'active' => 1,
+        ],
+        [
+            'id' => 0,
+            'image_url' => 'https://defence.gov.ng/wp-content/uploads/slider/cache/de24e192a317d951778e07962e82686d/WhatsApp-Image-2026-04-29-at-21.34.414.jpg',
+            'alt_text' => 'Inauguration of strategic committees',
+            'caption' => 'Inauguration of strategic committees — 29 April 2026',
+            'event_date' => '2026-04-29',
+            'category' => 'Ceremonies',
+            'sort_order' => 5,
+            'active' => 1,
+        ],
+        [
+            'id' => 0,
+            'image_url' => 'https://defence.gov.ng/wp-content/uploads/slider/cache/39e7bd9f42f86e2e15e02a7a8e72b6bb/WhatsApp-Image-2026-04-29-at-21.34.426.jpg',
+            'alt_text' => 'Strategic committee session at Ship House',
+            'caption' => 'Strategic committee session, Ship House',
+            'event_date' => '2026-04-29',
+            'category' => 'Ceremonies',
+            'sort_order' => 6,
+            'active' => 1,
+        ],
+        [
+            'id' => 0,
+            'image_url' => 'assets/images/headshots/general-christopher-musa.jpeg',
+            'alt_text' => 'Honourable Minister of Defence',
+            'caption' => 'Honourable Minister of Defence',
+            'event_date' => null,
+            'category' => 'Leadership',
+            'sort_order' => 7,
+            'active' => 1,
+        ],
+        [
+            'id' => 0,
+            'image_url' => 'assets/images/headshots/dr-bello-matawalle.jpg',
+            'alt_text' => 'Hon. Minister of State, Dr. Bello M. Matawalle',
+            'caption' => 'Honourable Minister of State, Dr. Bello M. Matawalle',
+            'event_date' => null,
+            'category' => 'Leadership',
+            'sort_order' => 8,
+            'active' => 1,
+        ],
+    ];
 }
