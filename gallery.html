@@ -13,13 +13,146 @@
   <link rel="stylesheet" href="assets/css/style.css?v=19" />
   <link rel="stylesheet" href="assets/css/mobile-nav.css" />
   <style>
-    .gallery-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-    .gallery-grid figure { margin:0; aspect-ratio: 4/3; overflow:hidden; border-radius: var(--radius); background:var(--paper-3); cursor: zoom-in; position: relative; }
-    .gallery-grid figure img { width:100%; height:100%; object-fit:cover; transition: transform .4s ease; }
+    /* ── Filter bar ── */
+    .gallery-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 28px;
+    }
+    .gallery-filter-btn {
+      padding: 6px 16px;
+      border-radius: 999px;
+      border: 1.5px solid var(--border);
+      background: transparent;
+      color: var(--text-2);
+      font-family: inherit;
+      font-size: .82rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background .18s, color .18s, border-color .18s;
+    }
+    .gallery-filter-btn:hover,
+    .gallery-filter-btn.active {
+      background: var(--green);
+      color: #fff;
+      border-color: var(--green);
+    }
+
+    /* ── Grid ── */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .gallery-grid figure {
+      margin: 0;
+      aspect-ratio: 4/3;
+      overflow: hidden;
+      border-radius: var(--radius);
+      background: var(--paper-3);
+      cursor: zoom-in;
+      position: relative;
+    }
+    .gallery-grid figure img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform .4s ease;
+    }
     .gallery-grid figure:hover img { transform: scale(1.05); }
-    .gallery-grid figure figcaption { position:absolute; left:0; right:0; bottom:0; background: linear-gradient(transparent, rgba(0,0,0,.7)); color:#fff; padding: 14px 16px; font-size:.85rem; opacity:0; transition: opacity .25s; }
-    .gallery-grid figure:hover figcaption { opacity:1; }
-    @media (max-width:880px) { .gallery-grid { grid-template-columns: repeat(2, 1fr); } }
+    .gallery-grid figure figcaption {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      background: linear-gradient(transparent, rgba(0,0,0,.72));
+      color: #fff;
+      padding: 14px 16px;
+      font-size: .82rem;
+      line-height: 1.4;
+      opacity: 0;
+      transition: opacity .25s;
+    }
+    .gallery-grid figure:hover figcaption { opacity: 1; }
+    .gallery-grid figure .gallery-cat-badge {
+      position: absolute;
+      top: 10px; left: 10px;
+      background: rgba(0,0,0,.55);
+      color: #fff;
+      font-size: .68rem;
+      font-weight: 600;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border-radius: 4px;
+      backdrop-filter: blur(4px);
+    }
+
+    /* ── Lightbox ── */
+    .gallery-lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0,0,0,.92);
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .gallery-lightbox.open { display: flex; }
+    .gallery-lightbox-inner {
+      position: relative;
+      max-width: 900px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+    .gallery-lightbox-inner img {
+      max-height: 78vh;
+      max-width: 100%;
+      border-radius: 6px;
+      object-fit: contain;
+    }
+    .gallery-lightbox-caption {
+      color: rgba(255,255,255,.88);
+      font-size: .9rem;
+      text-align: center;
+      max-width: 700px;
+    }
+    .gallery-lightbox-close {
+      position: absolute;
+      top: -14px; right: -14px;
+      background: rgba(255,255,255,.12);
+      border: none;
+      color: #fff;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .18s;
+    }
+    .gallery-lightbox-close:hover { background: rgba(255,255,255,.25); }
+
+    /* ── Loading / empty states ── */
+    .gallery-loading, .gallery-empty {
+      text-align: center;
+      padding: 60px 0;
+      color: var(--text-3);
+      font-size: .95rem;
+    }
+    .gallery-loading-spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--green);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width:880px) { .gallery-grid { grid-template-columns: repeat(2,1fr); } }
     @media (max-width:540px) { .gallery-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -29,26 +162,28 @@
   <main id="main">
     <section class="page-hero">
       <div class="container">
-        <div class="crumbs"><a href="index.html">Home</a><span>›</span>News & Media<span>›</span>Gallery</div>
-        <span class="eyebrow">News & Media</span>
+        <div class="crumbs"><a href="index.html">Home</a><span>›</span>News &amp; Media<span>›</span>Gallery</div>
+        <span class="eyebrow">News &amp; Media</span>
         <h1>Gallery.</h1>
-        <p class="lead">Photographs from official engagements, inspections and ceremonies of the Federal Ministry of Defence. All images sourced from <a href="https://defence.gov.ng" target="_blank" rel="noopener">defence.gov.ng</a>, the MOD <a href="https://instagram.com/mod_nigeria" target="_blank" rel="noopener">Instagram</a> and <a href="https://www.facebook.com/modinfonigeria" target="_blank" rel="noopener">Facebook</a> archives.</p>
+        <p class="lead">Photographs from official engagements, inspections and ceremonies of the Federal Ministry of Defence.</p>
       </div>
     </section>
 
     <section>
       <div class="container">
-        <div class="gallery-grid">
-          <figure><img src="https://defence.gov.ng/wp-content/uploads/slider/cache/5c91a2fb5a3c3d7d91aa26fb98ea005d/WhatsApp-Image-2026-05-08-at-09.51.56.jpg" alt="AMCE visit"><figcaption>Honourable Minister at the AMCE, Abuja — 8 May 2026</figcaption></figure>
-          <figure><img src="https://defence.gov.ng/wp-content/uploads/slider/cache/7ed124706b9db62fa4aae0e8bdc44f70/WhatsApp-Image-2026-05-06-at-09.44.49.jpg" alt="Regional security meeting"><figcaption>Regional security meeting — 6 May 2026</figcaption></figure>
-          <figure><img src="https://defence.gov.ng/wp-content/uploads/slider/cache/f2ac3e9cb69b47524dec83e6268b40b1/WhatsApp-Image-2026-05-05-at-16.06.33.jpg" alt="Veritas University delegation"><figcaption>Veritas University delegation, Ship House — 5 May 2026</figcaption></figure>
-          <figure><img src="https://defence.gov.ng/wp-content/uploads/slider/cache/b64dada37ea1a198b4a6e0382f45f0c0/WhatsApp-Image-2026-05-05-at-04.41.488-1.jpg" alt="Engagement on national security"><figcaption>Engagement on national security — 5 May 2026</figcaption></figure>
-          <figure><img src="https://defence.gov.ng/wp-content/uploads/slider/cache/7d5dab6eb3370ef45d22dfbeceb170b0/WhatsApp-Image-2026-05-05-at-04.41.4644.jpg" alt="Address to students"><figcaption>Address to Nigerian students — 5 May 2026</figcaption></figure>
-          <figure><img src="https://defence.gov.ng/wp-content/uploads/slider/cache/de24e192a317d951778e07962e82686d/WhatsApp-Image-2026-04-29-at-21.34.414.jpg" alt="Strategic committees inauguration"><figcaption>Inauguration of strategic committees — 29 April 2026</figcaption></figure>
-          <figure><img src="https://defence.gov.ng/wp-content/uploads/slider/cache/39e7bd9f42f86e2e15e02a7a8e72b6bb/WhatsApp-Image-2026-04-29-at-21.34.426.jpg" alt="Ship House conference room"><figcaption>Strategic committee session, Ship House</figcaption></figure>
-          <figure><img src="assets/images/headshots/general-christopher-musa.jpeg" alt="Honourable Minister"><figcaption>Honourable Minister of Defence</figcaption></figure>
-          <figure><img src="assets/images/headshots/dr-bello-matawalle.jpg" alt="Hon. Minister of State"><figcaption>Honourable Minister of State, Dr. Bello M. Matawalle</figcaption></figure>
+        <!-- Filter bar (populated by JS) -->
+        <div class="gallery-filters" id="gallery-filters"></div>
+
+        <!-- Grid -->
+        <div id="gallery-grid-wrapper">
+          <div class="gallery-loading" id="gallery-loading">
+            <div class="gallery-loading-spinner"></div>
+            Loading gallery…
+          </div>
+          <div class="gallery-grid" id="gallery-grid" style="display:none;"></div>
+          <div class="gallery-empty" id="gallery-empty" style="display:none;">No images in this category yet.</div>
         </div>
+
         <div class="text-center mt-6">
           <a href="https://www.facebook.com/modinfonigeria" target="_blank" rel="noopener" class="btn">More on Facebook</a>
           <a href="https://instagram.com/mod_nigeria" target="_blank" rel="noopener" class="btn btn-outline">More on Instagram</a>
@@ -56,6 +191,15 @@
       </div>
     </section>
   </main>
+
+  <!-- Lightbox -->
+  <div class="gallery-lightbox" id="gallery-lightbox" role="dialog" aria-modal="true" aria-label="Image viewer">
+    <div class="gallery-lightbox-inner">
+      <button class="gallery-lightbox-close" id="gallery-lightbox-close" aria-label="Close">&times;</button>
+      <img id="gallery-lightbox-img" src="" alt="" />
+      <p class="gallery-lightbox-caption" id="gallery-lightbox-caption"></p>
+    </div>
+  </div>
 
   <div data-include="footer"></div>
   <div data-include="chatbot"></div>
@@ -68,6 +212,163 @@
   <script src="assets/js/google-translate.js"></script>
   <script src="assets/js/main.js"></script>
   <script src="assets/js/chatbot.js"></script>
+
+  <script>
+  (function () {
+    'use strict';
+
+    var allImages = [];
+    var activeCategory = 'All';
+
+    var grid    = document.getElementById('gallery-grid');
+    var loading = document.getElementById('gallery-loading');
+    var empty   = document.getElementById('gallery-empty');
+    var filters = document.getElementById('gallery-filters');
+    var lb      = document.getElementById('gallery-lightbox');
+    var lbImg   = document.getElementById('gallery-lightbox-img');
+    var lbCap   = document.getElementById('gallery-lightbox-caption');
+    var lbClose = document.getElementById('gallery-lightbox-close');
+
+    /* ── Fetch images from API (falls back to static hardcoded if no API) ── */
+    function loadGallery() {
+      // Determine API base: admin/api/gallery.php relative to this page
+      var apiUrl = 'admin/api/gallery.php';
+
+      fetch(apiUrl)
+        .then(function (res) {
+          if (!res.ok) throw new Error('API error ' + res.status);
+          return res.json();
+        })
+        .then(function (data) {
+          allImages = data.images || [];
+          if (allImages.length === 0) {
+            allImages = staticFallback();
+          }
+          render();
+        })
+        .catch(function () {
+          // PHP not running (static preview) — use hardcoded images
+          allImages = staticFallback();
+          render();
+        });
+    }
+
+    /* ── Static fallback (mirrors the existing hardcoded gallery items) ── */
+    function staticFallback() {
+      return [
+        { image_url: 'https://defence.gov.ng/wp-content/uploads/slider/cache/5c91a2fb5a3c3d7d91aa26fb98ea005d/WhatsApp-Image-2026-05-08-at-09.51.56.jpg', alt_text: 'AMCE visit', caption: 'Honourable Minister at the AMCE, Abuja — 8 May 2026', event_date: '8 May 2026', category: 'Ministerial' },
+        { image_url: 'https://defence.gov.ng/wp-content/uploads/slider/cache/7ed124706b9db62fa4aae0e8bdc44f70/WhatsApp-Image-2026-05-06-at-09.44.49.jpg', alt_text: 'Regional security meeting', caption: 'Regional security meeting — 6 May 2026', event_date: '6 May 2026', category: 'Security' },
+        { image_url: 'https://defence.gov.ng/wp-content/uploads/slider/cache/f2ac3e9cb69b47524dec83e6268b40b1/WhatsApp-Image-2026-05-05-at-16.06.33.jpg', alt_text: 'Veritas University delegation', caption: 'Veritas University delegation, Ship House — 5 May 2026', event_date: '5 May 2026', category: 'Engagements' },
+        { image_url: 'https://defence.gov.ng/wp-content/uploads/slider/cache/b64dada37ea1a198b4a6e0382f45f0c0/WhatsApp-Image-2026-05-05-at-04.41.488-1.jpg', alt_text: 'Engagement on national security', caption: 'Engagement on national security — 5 May 2026', event_date: '5 May 2026', category: 'Security' },
+        { image_url: 'https://defence.gov.ng/wp-content/uploads/slider/cache/7d5dab6eb3370ef45d22dfbeceb170b0/WhatsApp-Image-2026-05-05-at-04.41.4644.jpg', alt_text: 'Address to students', caption: 'Address to Nigerian students — 5 May 2026', event_date: '5 May 2026', category: 'Engagements' },
+        { image_url: 'https://defence.gov.ng/wp-content/uploads/slider/cache/de24e192a317d951778e07962e82686d/WhatsApp-Image-2026-04-29-at-21.34.414.jpg', alt_text: 'Strategic committees inauguration', caption: 'Inauguration of strategic committees — 29 April 2026', event_date: '29 April 2026', category: 'Ceremonies' },
+        { image_url: 'https://defence.gov.ng/wp-content/uploads/slider/cache/39e7bd9f42f86e2e15e02a7a8e72b6bb/WhatsApp-Image-2026-04-29-at-21.34.426.jpg', alt_text: 'Ship House conference room', caption: 'Strategic committee session, Ship House', event_date: '', category: 'Ceremonies' },
+        { image_url: 'assets/images/headshots/general-christopher-musa.jpeg', alt_text: 'Honourable Minister', caption: 'Honourable Minister of Defence', event_date: '', category: 'Leadership' },
+        { image_url: 'assets/images/headshots/dr-bello-matawalle.jpg', alt_text: 'Hon. Minister of State', caption: 'Honourable Minister of State, Dr. Bello M. Matawalle', event_date: '', category: 'Leadership' }
+      ];
+    }
+
+    /* ── Render filter buttons ── */
+    function renderFilters() {
+      var cats = ['All'];
+      allImages.forEach(function (img) {
+        if (img.category && cats.indexOf(img.category) === -1) {
+          cats.push(img.category);
+        }
+      });
+      filters.innerHTML = '';
+      cats.forEach(function (cat) {
+        var btn = document.createElement('button');
+        btn.className = 'gallery-filter-btn' + (cat === activeCategory ? ' active' : '');
+        btn.textContent = cat;
+        btn.addEventListener('click', function () {
+          activeCategory = cat;
+          renderFilters();
+          renderGrid();
+        });
+        filters.appendChild(btn);
+      });
+    }
+
+    /* ── Render grid ── */
+    function renderGrid() {
+      var filtered = activeCategory === 'All'
+        ? allImages
+        : allImages.filter(function (img) { return img.category === activeCategory; });
+
+      if (filtered.length === 0) {
+        grid.style.display = 'none';
+        empty.style.display = '';
+        return;
+      }
+      empty.style.display = 'none';
+      grid.style.display = '';
+      grid.innerHTML = '';
+
+      filtered.forEach(function (img) {
+        var fig = document.createElement('figure');
+
+        if (img.category) {
+          var badge = document.createElement('span');
+          badge.className = 'gallery-cat-badge';
+          badge.textContent = img.category;
+          fig.appendChild(badge);
+        }
+
+        var image = document.createElement('img');
+        image.src = img.image_url;
+        image.alt = img.alt_text || '';
+        image.loading = 'lazy';
+        fig.appendChild(image);
+
+        var caption = img.caption || '';
+        if (img.event_date) caption = caption || img.event_date;
+        if (caption) {
+          var fc = document.createElement('figcaption');
+          fc.textContent = caption;
+          fig.appendChild(fc);
+        }
+
+        fig.addEventListener('click', function () { openLightbox(img); });
+        grid.appendChild(fig);
+      });
+    }
+
+    function render() {
+      loading.style.display = 'none';
+      renderFilters();
+      renderGrid();
+    }
+
+    /* ── Lightbox ── */
+    function openLightbox(img) {
+      lbImg.src = img.image_url;
+      lbImg.alt = img.alt_text || '';
+      var cap = img.caption || '';
+      if (img.event_date && cap.indexOf(img.event_date) === -1) {
+        cap = cap ? cap + ' — ' + img.event_date : img.event_date;
+      }
+      lbCap.textContent = cap;
+      lb.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      lbClose.focus();
+    }
+
+    function closeLightbox() {
+      lb.classList.remove('open');
+      document.body.style.overflow = '';
+      lbImg.src = '';
+    }
+
+    lbClose.addEventListener('click', closeLightbox);
+    lb.addEventListener('click', function (e) { if (e.target === lb) closeLightbox(); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && lb.classList.contains('open')) closeLightbox();
+    });
+
+    /* ── Boot ── */
+    loadGallery();
+  }());
+  </script>
 </body>
 </html>
-
